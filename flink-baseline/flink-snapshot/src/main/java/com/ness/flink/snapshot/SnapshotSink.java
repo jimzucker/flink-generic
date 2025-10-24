@@ -28,16 +28,19 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.codec.ByteArrayCodec;
 import java.io.IOException;
+import java.io.Serial;
 import lombok.AllArgsConstructor;
 import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.api.connector.sink2.SinkWriter;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.api.connector.sink2.WriterInitContext;
+import org.apache.flink.util.ParameterTool;
 
 /**
  * @author Khokhlov Pavel
  */
 @AllArgsConstructor
 public class SnapshotSink<T extends TimeAware> implements Sink<T> {
+    @Serial
     private static final long serialVersionUID = 6805501266870217945L;
 
     private final SnapshotMapper<T> snapshotMapper;
@@ -45,7 +48,7 @@ public class SnapshotSink<T extends TimeAware> implements Sink<T> {
     private final ParameterTool parameterTool;
 
     @Override
-    public SinkWriter<T> createWriter(InitContext initContext) {
+    public SinkWriter<T> createWriter(WriterInitContext initContext) {
         return new RedisWriter(parameterTool);
     }
 
