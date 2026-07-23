@@ -28,7 +28,7 @@ import com.ness.flink.config.operator.DefaultSink;
 import com.ness.flink.config.operator.DefaultSource;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 

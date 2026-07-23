@@ -18,7 +18,6 @@ package com.ness.flink.sink.jdbc;
 
 import com.ness.flink.config.operator.DefaultSource;
 import com.ness.flink.config.operator.KeyedProcessorDefinition;
-import com.ness.flink.sink.jdbc.JdbcSinkIT.TestSourceFunction;
 import com.ness.flink.sink.jdbc.core.executor.JdbcStatementBuilder;
 import com.ness.flink.sink.jdbc.domain.Price;
 import com.ness.flink.sink.jdbc.domain.PriceWithEmissionTime;
@@ -26,12 +25,11 @@ import com.ness.flink.sink.jdbc.properties.JdbcSinkProperties;
 import com.ness.flink.stream.StreamBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.api.connector.sink2.SinkWriter;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,8 +83,7 @@ class KeyedJdbcProcessFunctionIT {
     void shouldSkipSomeWrongRecords() {
         StreamBuilder streamBuilder = StreamBuilder.from(params);
 
-        DefaultSource<Price> testSource = source(TestSourceFunction.from(
-                    notSafeJdbcSinkProperties.getMaxWaitThreshold() + 5000,
+        DefaultSource<Price> testSource = source(
                     Price.builder().id(1).value(new BigDecimal("23.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(2).value(new BigDecimal("5.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build(),
@@ -96,7 +93,7 @@ class KeyedJdbcProcessFunctionIT {
                     Price.builder().id(6).currencyNum("USD").value(new BigDecimal("6.9")).sourceId("127.0.0.3").build(),
                     // duplicate
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build()
-                ));
+                );
 
         String sql = "INSERT INTO price (id, timestamp, sourceIp, price, currencyNum) values (?, ?, ?, ?, ?)"
             + " ON DUPLICATE KEY UPDATE timestamp = ?, sourceIp = ?, price = ?, currencyNum = ?";
@@ -147,8 +144,7 @@ class KeyedJdbcProcessFunctionIT {
     void shouldExecuteJob() {
         StreamBuilder streamBuilder = StreamBuilder.from(params);
 
-        DefaultSource<Price> testSource = source(TestSourceFunction.from(
-                    jdbcSinkProperties.getMaxWaitThreshold() + 5000,
+        DefaultSource<Price> testSource = source(
                     Price.builder().id(1).value(new BigDecimal("23.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(2).value(new BigDecimal("5.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build(),
@@ -156,7 +152,7 @@ class KeyedJdbcProcessFunctionIT {
                     Price.builder().id(5).value(new BigDecimal("6.9")).sourceId("127.0.0.3").build(),
                     // duplicate
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build()
-                ));
+                );
 
         String sql = "INSERT INTO price (id, timestamp, sourceIp, price) values (?, ?, ?, ?)"
             + " ON DUPLICATE KEY UPDATE timestamp = ?, sourceIp = ?, price = ?";
@@ -198,11 +194,12 @@ class KeyedJdbcProcessFunctionIT {
         Assertions.assertEquals(5, getRecordsNumber(), "Table should contains only this number of records");
     }
 
-    private DefaultSource<Price> source(SourceFunction<Price> sourceFunction) {
+    private DefaultSource<Price> source(Price... prices) {
         return new DefaultSource<>("test.source") {
             @Override
             public SingleOutputStreamOperator<Price> build(StreamExecutionEnvironment streamExecutionEnvironment) {
-                return streamExecutionEnvironment.addSource(sourceFunction);
+                // Flink 2.x: bounded source replacing the removed addSource(SourceFunction).
+                return streamExecutionEnvironment.fromData(prices).returns(Price.class);
             }
             @Override
             public Optional<Integer> getMaxParallelism() {
@@ -263,7 +260,7 @@ class KeyedJdbcProcessFunctionIT {
         private static final long serialVersionUID = -2159861918086239581L;
 
         @Override
-        public SinkWriter<PriceWithEmissionTime> createWriter(InitContext context) {
+        public SinkWriter<PriceWithEmissionTime> createWriter(org.apache.flink.api.connector.sink2.WriterInitContext context) {
             return new SinkWriter<>() {
                 @Override
                 public void write(PriceWithEmissionTime value, Context ctx) {

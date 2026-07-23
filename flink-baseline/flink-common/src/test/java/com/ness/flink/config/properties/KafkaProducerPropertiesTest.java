@@ -18,7 +18,7 @@ package com.ness.flink.config.properties;
 
 import com.ness.flink.security.Credentials;
 import com.ness.flink.security.SecretsProviderFactory;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.junit.jupiter.api.Assertions;

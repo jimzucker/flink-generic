@@ -20,7 +20,7 @@ import com.amazonaws.services.schemaregistry.common.AWSSchemaNamingStrategy;
 import com.amazonaws.services.schemaregistry.utils.AWSSchemaRegistryConstants;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

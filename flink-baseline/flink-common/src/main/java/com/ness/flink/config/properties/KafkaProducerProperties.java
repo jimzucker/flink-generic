@@ -30,7 +30,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.kafka.clients.producer.ProducerConfig;
 

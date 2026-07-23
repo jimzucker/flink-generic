@@ -20,13 +20,12 @@ import com.ness.flink.config.operator.DefaultSource;
 import com.ness.flink.config.operator.KeyedProcessorDefinition;
 import com.ness.flink.config.properties.OperatorProperties;
 import com.ness.flink.stream.test.TestEventString;
-import com.ness.flink.stream.test.TestSourceFunction;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.api.connector.sink2.Sink;
@@ -50,7 +49,8 @@ class StreamBuilderTest {
         DefaultSource<String> testSource = new DefaultSource<>("test.source") {
             @Override
             public SingleOutputStreamOperator<String> build(StreamExecutionEnvironment streamExecutionEnvironment) {
-                return streamExecutionEnvironment.addSource(TestSourceFunction.from("one", "two"));
+                // Flink 2.x: bounded source replacing the removed addSource(SourceFunction).
+                return streamExecutionEnvironment.fromData("one", "two");
             }
 
             @Override
@@ -83,7 +83,7 @@ class StreamBuilderTest {
         private static final long serialVersionUID = -2159861918086239581L;
 
         @Override
-        public SinkWriter<TestEventString> createWriter(InitContext context) {
+        public SinkWriter<TestEventString> createWriter(org.apache.flink.api.connector.sink2.WriterInitContext context) {
             return new SinkWriter<>() {
                 @Override
                 public void write(TestEventString value, Context ctx) {

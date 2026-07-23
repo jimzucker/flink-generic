@@ -20,7 +20,7 @@ import com.ness.flink.example.pipeline.domain.InterestRate;
 import com.ness.flink.example.pipeline.domain.intermediate.InterestRates;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.operators.KeyedProcessOperator;
 import org.apache.flink.streaming.util.KeyedOneInputStreamOperatorTestHarness;
 import org.junit.jupiter.api.AfterEach;

@@ -21,7 +21,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 import java.io.Serializable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.connector.sink2.Sink.InitContext;
+import org.apache.flink.api.connector.sink2.WriterInitContext;
 import org.apache.flink.api.connector.sink2.SinkWriter;
 
 /**
@@ -32,14 +32,14 @@ public abstract class AbstractSinkWriter<T> implements SinkWriter<T>, Serializab
     private static final long serialVersionUID = 1L;
 
     protected final String sinkName;
-    protected transient InitContext context;
+    protected transient WriterInitContext context;
 
     protected AbstractSinkWriter(String sinkName) {
         this.sinkName = checkNotNull(sinkName);
     }
 
     @SneakyThrows
-    public void open(InitContext context) {
+    public void open(WriterInitContext context) {
         this.context = context;
     }
 

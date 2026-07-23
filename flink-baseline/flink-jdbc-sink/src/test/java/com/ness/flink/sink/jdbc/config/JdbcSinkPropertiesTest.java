@@ -18,7 +18,7 @@ package com.ness.flink.sink.jdbc.config;
 
 import java.util.Map;
 import com.ness.flink.sink.jdbc.properties.JdbcSinkProperties;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

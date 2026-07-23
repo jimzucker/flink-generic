@@ -20,7 +20,7 @@ import com.ness.flink.config.properties.WatermarkProperties;
 import com.ness.flink.snapshot.context.properties.ContextProperties;
 import com.ness.flink.snapshot.context.rest.RestBased;
 import com.ness.flink.window.generator.GeneratorType;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

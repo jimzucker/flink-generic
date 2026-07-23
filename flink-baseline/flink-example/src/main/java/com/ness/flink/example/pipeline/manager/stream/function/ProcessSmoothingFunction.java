@@ -48,8 +48,7 @@ import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
@@ -76,8 +75,8 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
     private transient boolean debugLogging;
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-        super.open(parameters);
+    public void open(org.apache.flink.api.common.functions.OpenContext openContext) throws Exception {
+        super.open(openContext);
 
         String opName = getClass().getName();
 
