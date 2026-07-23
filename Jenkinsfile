@@ -16,7 +16,7 @@ pipeline {
     agent {
         kubernetes {
             label "jenkins-maven-${UUID.randomUUID().toString()}"
-            inheritFrom 'maven-java11'
+            inheritFrom 'maven-java17'
         }
     }
     environment {

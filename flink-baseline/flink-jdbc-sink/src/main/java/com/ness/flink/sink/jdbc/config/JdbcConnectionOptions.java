@@ -35,6 +35,7 @@ public class JdbcConnectionOptions implements Serializable {
     private String dbURL;
     private String driverName;
     private String username;
+    @ToString.Exclude
     private String password;
     private Boolean autoCommit;
 

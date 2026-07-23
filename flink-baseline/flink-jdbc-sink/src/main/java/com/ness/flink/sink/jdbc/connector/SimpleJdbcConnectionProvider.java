@@ -69,8 +69,8 @@ public class SimpleJdbcConnectionProvider implements JdbcConnectionProvider {
         // * driver is not installed as a service provider.
         Class<?> clazz = Class.forName(driverName, true, Thread.currentThread().getContextClassLoader());
         try {
-            return (Driver) clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return (Driver) clazz.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
             throw new SQLException("Fail to create driver of class " + driverName, e);
         }
     }

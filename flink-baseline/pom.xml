@@ -38,12 +38,13 @@
     <properties>
         <flink.version>1.20.0</flink.version>
         <flink.connector.kafka>3.4.0-1.20</flink.connector.kafka>
-        <jackson.version>2.15.3</jackson.version>
-        <redis.lettuce.version>5.3.7.RELEASE</redis.lettuce.version>
-        <log4j.version>2.19.0</log4j.version>
-        <dropwizard.metrics.version>4.1.10.1</dropwizard.metrics.version>
+        <jackson.version>2.18.2</jackson.version>
+        <redis.lettuce.version>6.5.1.RELEASE</redis.lettuce.version>
+        <log4j.version>2.24.3</log4j.version>
+        <dropwizard.metrics.version>4.2.29</dropwizard.metrics.version>
         <aws-kinesisanalytics-runtime.version>1.2.0</aws-kinesisanalytics-runtime.version>
-        <aws.glue.flink.serde.version>1.1.14</aws.glue.flink.serde.version>
+        <aws.glue.flink.serde.version>1.1.20</aws.glue.flink.serde.version>
+        <!-- Kept at 1.0.2 (latest 1.x). 2.0.0 migrates to AWS SDK v2 (breaking) — deferred major. -->
         <aws.secret.manager.version>1.0.2</aws.secret.manager.version>
     </properties>
 

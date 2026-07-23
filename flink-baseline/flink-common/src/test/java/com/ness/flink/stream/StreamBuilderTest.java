@@ -29,8 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.sink2.SinkWriter;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.Collector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -67,18 +68,39 @@ class StreamBuilderTest {
                 log.info("Read: value={}", v);
                 return v;
             }))
-            .addSink(() -> new SinkFunction<>() {
-                private static final long serialVersionUID = -2159861918086239581L;
-
-                @Override
-                public void invoke(TestEventString value, Context context) {
-                    VALUES.add(value);
-                }
-            }).build().run("test.sink");
+            .addSink(CollectingSink::new).build().run("test.sink");
 
         Assertions.assertEquals(2, VALUES.size());
         Assertions.assertTrue(
             VALUES.containsAll(Set.of(TestEventString.fromKey("one"), TestEventString.fromKey("two"))));
+    }
+
+    /**
+     * Sink2 sink that collects values into the static {@link #VALUES} set. Declared {@code static}
+     * so it does not capture the (non-serializable) enclosing test instance when Flink serializes it.
+     */
+    private static final class CollectingSink implements Sink<TestEventString> {
+        private static final long serialVersionUID = -2159861918086239581L;
+
+        @Override
+        public SinkWriter<TestEventString> createWriter(InitContext context) {
+            return new SinkWriter<>() {
+                @Override
+                public void write(TestEventString value, Context ctx) {
+                    VALUES.add(value);
+                }
+
+                @Override
+                public void flush(boolean endOfInput) {
+                    // no-op
+                }
+
+                @Override
+                public void close() {
+                    // no-op
+                }
+            };
+        }
     }
 
     private static class TestProcessFunction extends KeyedProcessFunction<String, String, TestEventString> {

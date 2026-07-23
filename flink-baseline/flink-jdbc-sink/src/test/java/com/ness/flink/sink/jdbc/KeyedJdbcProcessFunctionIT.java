@@ -29,7 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.sink2.SinkWriter;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -234,14 +235,7 @@ class KeyedJdbcProcessFunctionIT {
             .stream()
             .source(testSource)
             .addKeyedProcessor(stringPricePriceWithEmissionTimeKeyedProcessorDefinition)
-            .addSink(() -> new SinkFunction<>() {
-                private static final long serialVersionUID = -2159861918086239581L;
-
-                @Override
-                public void invoke(PriceWithEmissionTime value, Context context) {
-                    PRICE_WITH_EMISSION_TIMES.add(value);
-                }
-            })
+            .addSink(CollectingSink::new)
             .build()
             .run("test.jdbc.sink");
     }
@@ -258,6 +252,35 @@ class KeyedJdbcProcessFunctionIT {
             stmt.close();
         }
         return 0;
+    }
+
+    /**
+     * Sink2 sink that collects values into the static {@link #PRICE_WITH_EMISSION_TIMES} list.
+     * Declared {@code static} so it does not capture the (non-serializable) enclosing test instance
+     * when Flink serializes it.
+     */
+    private static final class CollectingSink implements Sink<PriceWithEmissionTime> {
+        private static final long serialVersionUID = -2159861918086239581L;
+
+        @Override
+        public SinkWriter<PriceWithEmissionTime> createWriter(InitContext context) {
+            return new SinkWriter<>() {
+                @Override
+                public void write(PriceWithEmissionTime value, Context ctx) {
+                    PRICE_WITH_EMISSION_TIMES.add(value);
+                }
+
+                @Override
+                public void flush(boolean endOfInput) {
+                    // no-op
+                }
+
+                @Override
+                public void close() {
+                    // no-op
+                }
+            };
+        }
     }
 
 }

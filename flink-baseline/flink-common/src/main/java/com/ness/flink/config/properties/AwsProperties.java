@@ -64,8 +64,14 @@ public class AwsProperties implements RawProperties<AwsProperties> {
         });
         Object schemaNameGeneratorClass = awsProperties.get(AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS);
         if (schemaNameGeneratorClass != null) {
-            AWSSchemaNamingStrategy strategy = (AWSSchemaNamingStrategy)
-                    Class.forName(schemaNameGeneratorClass.toString()).getDeclaredConstructor().newInstance();
+            Class<?> clazz = Class.forName(schemaNameGeneratorClass.toString());
+            // Validate the configured class is a naming strategy BEFORE instantiating it,
+            // so an arbitrary class's constructor is never invoked from configuration.
+            if (!AWSSchemaNamingStrategy.class.isAssignableFrom(clazz)) {
+                throw new IllegalArgumentException("Configured " + AWSSchemaRegistryConstants.SCHEMA_NAMING_GENERATION_CLASS
+                    + " must implement " + AWSSchemaNamingStrategy.class.getName() + ", but was: " + clazz.getName());
+            }
+            AWSSchemaNamingStrategy strategy = (AWSSchemaNamingStrategy) clazz.getDeclaredConstructor().newInstance();
             awsProperties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, strategy.getSchemaName(topic));
         } else {
             awsProperties.put(AWSSchemaRegistryConstants.SCHEMA_NAME, topic);

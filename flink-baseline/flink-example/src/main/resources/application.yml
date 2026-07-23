@@ -23,7 +23,10 @@ watermark:
 redis:
     host: localhost
     port: 6379
-    password: e1adc4f1dd55364963a71e53bc8e7557ed5c26e9fc5f3c69a284adf1ec614860
+    # Local-dev placeholder only (matches docker-compose default). In real deployments
+    # override via job arguments (--redis.password) or an external secret manager; do not
+    # commit real secrets here.
+    password: local-dev-redis-pw
 
 channel:
   type: KAFKA_CONFLUENT
@@ -105,8 +108,10 @@ environment:
   #execution.checkpointing.unaligned: false
 
 jdbc.shared:
+  # Local-dev placeholders only (match docker-compose defaults). Override via job
+  # arguments or a secret manager in real deployments; do not commit real secrets here.
   username: "root"
-  password: "example"
+  password: "local-dev-only"
   url: "jdbc:mysql://localhost:3306/test?useConfigs=maxPerformance&connectTimeout=10&sessionVariables=wait_timeout=300"
   connectionCheckMaxIdleMs: 500
 

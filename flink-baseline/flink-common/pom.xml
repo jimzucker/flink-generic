@@ -46,4 +46,41 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Expose the mockito-core jar path as ${org.mockito:mockito-core:jar} so it can
+                 be launched as a -javaagent below. Required because this module uses Mockito's
+                 inline mock maker (mockStatic/spy), and JDK 21+ blocks runtime self-attach. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>resolve-mockito-agent</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Override only argLine (forkCount/reuseForks inherited from parent pluginManagement)
+                 to run Mockito as a launch-time Java agent instead of self-attaching. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        -javaagent:${org.mockito:mockito-core:jar}
+                        -Xmx1024m
+                        -Dnet.bytebuddy.experimental=true
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

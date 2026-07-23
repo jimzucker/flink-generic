@@ -41,6 +41,8 @@ public class RedisProperties implements RawProperties<RedisProperties>  {
 
     private String host = "localhost";
     private int port = DEFAULT_REDIS_PORT;
+
+    @ToString.Exclude
     private String password;
 
     @ToString.Exclude
