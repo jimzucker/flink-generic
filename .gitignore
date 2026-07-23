@@ -1,3 +1,6 @@
+# Claude Code personal/local settings (machine-specific overrides)
+.claude/settings.local.json
+
 # Compiled class file
 *.class
 
