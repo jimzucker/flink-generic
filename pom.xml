@@ -42,11 +42,11 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
         <sonar.organization>ness.com</sonar.organization>
-        <lombok.version>1.18.40</lombok.version>
-        <guava.version>33.4.0-jre</guava.version>
+        <lombok.version>1.18.46</lombok.version>
+        <guava.version>33.6.0-jre</guava.version>
         <spring.boot.version>2.5.14</spring.boot.version>
-        <test.containers.version>1.20.4</test.containers.version>
-        <netty.version>4.1.116.Final</netty.version>
+        <test.containers.version>1.21.4</test.containers.version>
+        <netty.version>4.1.118.Final</netty.version>
     </properties>
 
     <repositories>
@@ -85,7 +85,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
-                <version>5.18.0</version>
+                <version>5.23.0</version>
                 <scope>test</scope>
             </dependency>
             <!-- Pin Netty transitively pulled by Lettuce/Flink to a CVE-clear version -->
@@ -146,7 +146,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <release>${java.version}</release>
                     <!-- JDK 23+ no longer runs classpath annotation processors implicitly;
@@ -164,7 +164,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -178,7 +178,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.3</version>
+                <version>3.1.4</version>
             </plugin>
 
             <plugin>
@@ -199,7 +199,7 @@
             <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
-                <version>0.16.1</version>
+                <version>0.18</version>
                 <inherited>false</inherited>
                 <executions>
                     <execution>
@@ -306,7 +306,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.12</version>
+                    <version>0.8.15</version>
                     <configuration>
                         <append>true</append>
                     </configuration>

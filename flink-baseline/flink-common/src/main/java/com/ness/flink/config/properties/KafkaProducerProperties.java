@@ -16,11 +16,9 @@
 
 package com.ness.flink.config.properties;
 
-import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serial;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -77,15 +75,13 @@ public class KafkaProducerProperties extends KafkaProperties implements RawPrope
     public Properties buildProperties(@Nullable RawProperties<?> secretProviderProperties) {
         Properties producerProperties = new Properties();
         Map<String, String> filtered = filterNonProducerProperties();
-        String masked = replaceKafkaCredentials(filtered, secretProviderProperties);
+        replaceKafkaCredentials(filtered, secretProviderProperties);
         producerProperties.putAll(filtered);
 
-        HashMap<Object, Object> forPrint = new HashMap<>(producerProperties);
-        if (masked != null) {
-            // Masks credential configuration
-            forPrint.replace(SASL_JAAS_CONFIG, masked);
+        // Always mask credential-bearing keys before logging (inline or secret-manager sourced).
+        if (log.isInfoEnabled()) {
+            log.info("Building Kafka ProducerProperties: producerProperties={}", redactForLogging(producerProperties));
         }
-        log.info("Building Kafka ProducerProperties: producerProperties={}", forPrint);
         return producerProperties;
     }
 

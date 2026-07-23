@@ -38,18 +38,28 @@
     <properties>
         <flink.version>1.20.0</flink.version>
         <flink.connector.kafka>3.4.0-1.20</flink.connector.kafka>
-        <jackson.version>2.18.2</jackson.version>
+        <jackson.version>2.19.2</jackson.version>
         <redis.lettuce.version>6.5.1.RELEASE</redis.lettuce.version>
-        <log4j.version>2.24.3</log4j.version>
-        <dropwizard.metrics.version>4.2.29</dropwizard.metrics.version>
+        <log4j.version>2.25.1</log4j.version>
+        <dropwizard.metrics.version>4.2.39</dropwizard.metrics.version>
         <aws-kinesisanalytics-runtime.version>1.2.0</aws-kinesisanalytics-runtime.version>
-        <aws.glue.flink.serde.version>1.1.20</aws.glue.flink.serde.version>
+        <aws.glue.flink.serde.version>1.1.27</aws.glue.flink.serde.version>
         <!-- Kept at 1.0.2 (latest 1.x). 2.0.0 migrates to AWS SDK v2 (breaking) — deferred major. -->
         <aws.secret.manager.version>1.0.2</aws.secret.manager.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Align ALL jackson artifacts (databind/core, not just annotations) to a known
+                 version so they don't float to older, potentially-vulnerable transitives. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Logging framework -->
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>

@@ -23,7 +23,9 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import com.google.common.annotations.VisibleForTesting;
 import com.ness.flink.security.Credentials;
 import com.ness.flink.security.SecretsProviderFactory;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -67,6 +69,28 @@ public abstract class KafkaProperties {
      * @return kafka properties
      */
     public abstract Properties buildProperties(@Nullable RawProperties<?> secretProviderProperties);
+
+    /**
+     * Builds a copy of the given Kafka properties that is safe to log: any value under a
+     * credential-bearing key (SASL JAAS config, passwords, basic-auth user info, SSL passwords) is
+     * masked, whether the credential was injected from a secret manager OR provided inline. This
+     * prevents plaintext credential leakage at INFO level.
+     * @param properties resolved Kafka properties
+     * @return a masked copy for logging
+     */
+    protected static Map<Object, Object> redactForLogging(Properties properties) {
+        Map<Object, Object> forPrint = new HashMap<>(properties);
+        forPrint.replaceAll((key, value) ->
+            isSensitiveKey(String.valueOf(key)) ? MASKED_VALUE.toString() : value);
+        return forPrint;
+    }
+
+    private static boolean isSensitiveKey(String key) {
+        String normalized = key.toLowerCase(Locale.ROOT);
+        return normalized.equals(SASL_JAAS_CONFIG)
+            || normalized.contains("password")
+            || normalized.contains("basic.auth.user.info");
+    }
 
     /**
      * Provides Confluent Schema Registry URL
