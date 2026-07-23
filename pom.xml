@@ -45,6 +45,9 @@
         <lombok.version>1.18.46</lombok.version>
         <guava.version>33.6.0-jre</guava.version>
         <spring.boot.version>2.5.14</spring.boot.version>
+        <!-- Testcontainers stays on the latest 1.x: 2.0.x dropped the JDBC database-container
+             ecosystem (org.testcontainers:mysql / :jdbc / :database-commons are not published for
+             2.x, and core 2.0.5 ships no JdbcDatabaseContainer), so the MySQL ITs cannot run on it. -->
         <test.containers.version>1.21.4</test.containers.version>
         <netty.version>4.1.118.Final</netty.version>
     </properties>
@@ -130,13 +133,10 @@
             <version>${test.containers.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- org.testcontainers:junit-jupiter removed: the @Testcontainers/@Container extension is
+             unused (containers are started manually in @BeforeAll), and Testcontainers 2.0 no longer
+             publishes that module. -->
 
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${test.containers.version}</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 
