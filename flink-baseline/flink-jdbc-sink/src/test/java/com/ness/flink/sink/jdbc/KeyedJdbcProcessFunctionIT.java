@@ -22,9 +22,11 @@ import com.ness.flink.sink.jdbc.core.executor.JdbcStatementBuilder;
 import com.ness.flink.sink.jdbc.domain.Price;
 import com.ness.flink.sink.jdbc.domain.PriceWithEmissionTime;
 import com.ness.flink.sink.jdbc.properties.JdbcSinkProperties;
+import com.ness.flink.sink.jdbc.testsource.DelayedListSource;
 import com.ness.flink.stream.StreamBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -198,8 +200,14 @@ class KeyedJdbcProcessFunctionIT {
         return new DefaultSource<>("test.source") {
             @Override
             public SingleOutputStreamOperator<Price> build(StreamExecutionEnvironment streamExecutionEnvironment) {
-                // Flink 2.x: bounded source replacing the removed addSource(SourceFunction).
-                return streamExecutionEnvironment.fromData(prices).returns(Price.class);
+                // Flink 2.x: bounded source replacing the removed addSource(SourceFunction). Lingers ~4s after
+                // emitting so the KeyedJdbcProcessFunction processing-time timer (maxWaitThreshold=1s) fires and
+                // flushes/emits the sub-batchSize records before the job ends. Plain fromData() finishes in ms,
+                // and Flink does not fire pending processing-time timers on bounded-source finish.
+                return streamExecutionEnvironment
+                    .fromSource(DelayedListSource.of(Price.class, 4_000L, prices),
+                        WatermarkStrategy.noWatermarks(), "test.source")
+                    .returns(Price.class);
             }
             @Override
             public Optional<Integer> getMaxParallelism() {

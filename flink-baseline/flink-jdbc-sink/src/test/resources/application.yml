@@ -22,6 +22,9 @@ jdbc.shared:
 test.jdbc.sink:
   parallelism: 2
   waitBeforeRetryMs: 5000
+  # Sub-batch (batchSize 100) records are flushed/emitted by the processing-time timer after this threshold.
+  # Kept short so the timer fires within the IT source's linger window (see DelayedListSource).
+  maxWaitThreshold: 1000
 
 non.safe.jdbc.sink:
   parallelism: 1
