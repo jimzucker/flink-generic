@@ -44,7 +44,7 @@
         <sonar.organization>ness.com</sonar.organization>
         <lombok.version>1.18.46</lombok.version>
         <guava.version>33.6.0-jre</guava.version>
-        <spring.boot.version>2.5.14</spring.boot.version>
+        <spring.boot.version>4.1.0</spring.boot.version>
         <!-- Testcontainers stays on the latest 1.x: 2.0.x dropped the JDBC database-container
              ecosystem (org.testcontainers:mysql / :jdbc / :database-commons are not published for
              2.x, and core 2.0.5 ships no JdbcDatabaseContainer), so the MySQL ITs cannot run on it. -->

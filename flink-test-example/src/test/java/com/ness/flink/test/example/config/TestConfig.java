@@ -27,12 +27,12 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
-import org.springframework.boot.actuate.autoconfigure.metrics.KafkaMetricsAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration;
+import org.springframework.boot.kafka.autoconfigure.metrics.KafkaMetricsAutoConfiguration;
+import org.springframework.boot.tomcat.autoconfigure.metrics.TomcatMetricsAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +48,7 @@ import java.util.Properties;
 @Configuration
 @ComponentScan(basePackages = {"com.ness.flink.test"})
 @Import({TestProperties.class})
-@EnableAutoConfiguration(exclude = {RedisAutoConfiguration.class, RedisRepositoriesAutoConfiguration.class, KafkaMetricsAutoConfiguration.class, TomcatMetricsAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {DataRedisAutoConfiguration.class, DataRedisRepositoriesAutoConfiguration.class, KafkaMetricsAutoConfiguration.class, TomcatMetricsAutoConfiguration.class})
 @Slf4j
 public class TestConfig {
 
@@ -74,8 +74,8 @@ public class TestConfig {
 
         streamsBuilder
                 .stream(testProperties.getSmoothingInput(), Consumed.with(Serdes.String(), new JsonSerde<>(SmoothingRequest.class)))
-                .process(() -> new ResultProcessor<>(resultService, (context, v) -> {
-                    v.setTimestamp(context.timestamp());
+                .process(() -> new ResultProcessor<>(resultService, (record, v) -> {
+                    v.setTimestamp(record.timestamp());
                     return v;
                 }));
 
