@@ -57,6 +57,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
+                        @{argLine}
                         -javaagent:${org.mockito:mockito-core:jar}
                         -Xmx1024m
                         -Dnet.bytebuddy.experimental=true

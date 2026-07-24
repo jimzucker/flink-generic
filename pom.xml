@@ -292,7 +292,10 @@
                     <configuration>
                         <forkCount>3</forkCount>
                         <reuseForks>true</reuseForks>
+                        <!-- @{argLine} chains in the JaCoCo agent set by jacoco:prepare-agent; without it
+                             this inline argLine overrode it and no coverage data was ever collected. -->
                         <argLine>
+                            @{argLine}
                             -Xmx1024m
                             -Dnet.bytebuddy.experimental=true
                             -Djdk.attach.allowAttachSelf=true
