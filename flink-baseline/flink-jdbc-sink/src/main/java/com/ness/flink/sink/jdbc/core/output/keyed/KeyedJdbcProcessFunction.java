@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Internal
 @RequiredArgsConstructor
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class KeyedJdbcProcessFunction<K, I, O> extends KeyedProcessFunction<K, I, O> {
     private static final long serialVersionUID = -977755296123316334L;
 

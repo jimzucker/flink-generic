@@ -31,6 +31,9 @@ import org.apache.flink.util.Preconditions;
  * @author Khokhlov Pavel
  */
 @Slf4j
+// The static-block DriverManager.getDrivers() call is intentional: it forces DriverManager class
+// initialization (side effect), not its return value.
+@SuppressWarnings("PMD.UselessPureMethodCall")
 public class SimpleJdbcConnectionProvider implements JdbcConnectionProvider {
     private static final long serialVersionUID = 1L;
 

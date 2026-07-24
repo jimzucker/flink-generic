@@ -87,7 +87,7 @@ public abstract class KafkaProperties {
 
     private static boolean isSensitiveKey(String key) {
         String normalized = key.toLowerCase(Locale.ROOT);
-        return normalized.equals(SASL_JAAS_CONFIG)
+        return SASL_JAAS_CONFIG.equals(normalized)
             || normalized.contains("password")
             || normalized.contains("basic.auth.user.info");
     }
@@ -131,7 +131,8 @@ public abstract class KafkaProperties {
      * @param secretProviderProperties secret provider settings
      * @return Credentials if they required
      */
-    protected @Nullable Credentials getCredentials(String prefix, @Nullable RawProperties<?> secretProviderProperties) {
+    @Nullable
+    protected Credentials getCredentials(String prefix, @Nullable RawProperties<?> secretProviderProperties) {
         String secretName = rawValues.get(prefix + SECRET_NAME);
         if (secretName != null) {
             var errorMsg = String.format("Secret name provided %s", secretName);

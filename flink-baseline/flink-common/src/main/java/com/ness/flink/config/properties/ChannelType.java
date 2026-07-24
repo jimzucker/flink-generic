@@ -37,6 +37,8 @@ import java.io.Serializable;
  *
  * @author Khokhlov Pavel
  */
+// Central channel registry: intentionally wires together many source/sink factory types.
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public enum ChannelType implements SinkFactory, SourceFactory {
 
     KAFKA_CONFLUENT {

@@ -37,6 +37,8 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
  * Building Flink Sink/Source operators.
  */
 @PublicEvolving
+// Stream-assembly facade: intentionally coordinates many operator/config types.
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class StreamOperation {
     private final StreamBuilder streamBuilder;
     public StreamOperation(StreamBuilder streamBuilder) {

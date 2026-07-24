@@ -57,7 +57,7 @@ import org.apache.flink.util.Collector;
  * @author Khokhlov Pavel
  */
 @Slf4j
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<String, OptionPrice, JobConfig, SmoothingRequest> {
 
     @Serial
@@ -137,8 +137,10 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
 
         if (!Boolean.TRUE.equals(pricesUpdateRequiredState.value())) {
             pricesUpdateRequiredState.update(true);
-            log.debug("{} pricesUpdateRequired: {} , duration: {} ms", underlying, pricesUpdateRequired,
-                System.currentTimeMillis() - start);
+            if (log.isDebugEnabled()) {
+                log.debug("{} pricesUpdateRequired: {} , duration: {} ms", underlying, pricesUpdateRequired,
+                    System.currentTimeMillis() - start);
+            }
             // Register timer
             WindowContext context = windowAware.generateWindowPeriod(timestamp);
             final long fireTime = context.endOfWindow();
@@ -254,10 +256,7 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
     }
 
     private boolean updateRequired(Event fromStorage, Event fromCurrentWindow) {
-        if (fromStorage == null) {
-            return true;
-        }
-        return !fromStorage.equals(fromCurrentWindow);
+        return fromStorage == null || !fromStorage.equals(fromCurrentWindow);
     }
 
     private SmoothingRequest createFrom(String underlyingKey, Map<String, OptionPrice> prices,
