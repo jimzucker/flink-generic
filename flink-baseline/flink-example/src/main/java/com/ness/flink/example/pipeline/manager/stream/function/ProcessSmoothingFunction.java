@@ -48,8 +48,7 @@ import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.functions.co.KeyedBroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
@@ -58,7 +57,7 @@ import org.apache.flink.util.Collector;
  * @author Khokhlov Pavel
  */
 @Slf4j
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<String, OptionPrice, JobConfig, SmoothingRequest> {
 
     @Serial
@@ -76,8 +75,8 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
     private transient boolean debugLogging;
 
     @Override
-    public void open(Configuration parameters) throws Exception {
-        super.open(parameters);
+    public void open(org.apache.flink.api.common.functions.OpenContext openContext) throws Exception {
+        super.open(openContext);
 
         String opName = getClass().getName();
 
@@ -138,8 +137,10 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
 
         if (!Boolean.TRUE.equals(pricesUpdateRequiredState.value())) {
             pricesUpdateRequiredState.update(true);
-            log.debug("{} pricesUpdateRequired: {} , duration: {} ms", underlying, pricesUpdateRequired,
-                System.currentTimeMillis() - start);
+            if (log.isDebugEnabled()) {
+                log.debug("{} pricesUpdateRequired: {} , duration: {} ms", underlying, pricesUpdateRequired,
+                    System.currentTimeMillis() - start);
+            }
             // Register timer
             WindowContext context = windowAware.generateWindowPeriod(timestamp);
             final long fireTime = context.endOfWindow();
@@ -255,10 +256,7 @@ public class ProcessSmoothingFunction extends KeyedBroadcastProcessFunction<Stri
     }
 
     private boolean updateRequired(Event fromStorage, Event fromCurrentWindow) {
-        if (fromStorage == null) {
-            return true;
-        }
-        return !fromStorage.equals(fromCurrentWindow);
+        return fromStorage == null || !fromStorage.equals(fromCurrentWindow);
     }
 
     private SmoothingRequest createFrom(String underlyingKey, Map<String, OptionPrice> prices,

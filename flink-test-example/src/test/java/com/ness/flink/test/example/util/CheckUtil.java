@@ -35,12 +35,24 @@ public class CheckUtil {
 
     public static void checkAggregatedPrices(Map<String, Map<String, OptionPrice>> expectedPrices,
                                              Map<String, SmoothingRequest> actualResults) {
+        // Collect every missing underlying (instead of failing on the first) so the failure
+        // message shows whether this is a broad completeness/throughput problem or a single key.
+        java.util.List<String> missing = new java.util.ArrayList<>();
         expectedPrices.forEach((underlying, expectedOptionPrices) -> {
             SmoothingRequest actualRequest = actualResults.get(underlying);
-            Assert.assertNotNull(actualRequest, "Cannot find option prices for Underlying: " + underlying);
-            Map<String, OptionPrice> actualOptionPrices = actualRequest.getOptionPrices();
-            checkPrices(actualOptionPrices, expectedOptionPrices);
+            if (actualRequest == null) {
+                missing.add(underlying);
+            } else {
+                checkPrices(actualRequest.getOptionPrices(), expectedOptionPrices);
+            }
         });
+        if (!missing.isEmpty()) {
+            missing.sort(Comparator.naturalOrder());
+            java.util.List<String> sample = missing.subList(0, Math.min(20, missing.size()));
+            Assert.fail(String.format(
+                "Missing option prices for %d/%d expected underliers (received %d). Missing sample: %s",
+                missing.size(), expectedPrices.size(), actualResults.size(), sample));
+        }
     }
 
     public static void checkPrices(Map<String, OptionPrice> actual, Map<String, OptionPrice> expected) {

@@ -24,7 +24,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,6 +41,8 @@ public class RedisProperties implements RawProperties<RedisProperties>  {
 
     private String host = "localhost";
     private int port = DEFAULT_REDIS_PORT;
+
+    @ToString.Exclude
     private String password;
 
     @ToString.Exclude
@@ -54,11 +56,12 @@ public class RedisProperties implements RawProperties<RedisProperties>  {
     }
 
     public RedisURI build() {
-        RedisURI redisURI = new RedisURI();
-        redisURI.setHost(host);
-        redisURI.setPassword(password);
-        redisURI.setPort(port);
-        return redisURI;
+        // Lettuce 7 removed the mutable RedisURI setters (setHost/setPort/setPassword); use the builder.
+        RedisURI.Builder builder = RedisURI.builder().withHost(host).withPort(port);
+        if (password != null) {
+            builder.withPassword(password.toCharArray());
+        }
+        return builder.build();
     }
 
     @Override

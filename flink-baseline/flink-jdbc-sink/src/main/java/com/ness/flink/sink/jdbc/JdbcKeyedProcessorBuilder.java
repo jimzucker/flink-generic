@@ -29,7 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.util.function.SerializableFunction;
 
 import javax.annotation.Nullable;

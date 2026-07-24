@@ -24,7 +24,7 @@ import com.ness.flink.snapshot.SnapshotSink;
 import com.ness.flink.storage.cache.EntityTypeEnum;
 import lombok.experimental.SuperBuilder;
 import org.apache.flink.api.connector.sink2.Sink;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 
 import java.util.Optional;
 

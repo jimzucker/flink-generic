@@ -105,6 +105,15 @@ public class SmoothingIT extends AbstractTestNGSpringContextTests {
         ConsumerResult<SmoothingRequest> consumerResult = resultService.getResult();
         Map<String, SmoothingRequest> actualResults = consumerResult.getRes();
 
+        if (actualResults.isEmpty()) {
+            // Fail fast with the actual cause instead of a cryptic downstream mismatch ("Underlying: 0").
+            fail("No SmoothingRequest output was consumed from Kafka. The usual cause is that the "
+                + "SmoothingPricesJob application is not running: SmoothingIT only feeds input and verifies "
+                + "output, it does not start the job. Start SmoothingPricesJob separately (see "
+                + ".run/SmoothingPricesJob.run.xml or the project runbook) with the docker-compose stack up, "
+                + "then re-run this IT.");
+        }
+
         if (testProperties.isStrictWindowCheck()) {
             Set<String> duplicatedWindows = consumerResult.getDuplicatedWindows();
             Assert.assertEquals(duplicatedWindows.size(), 0, "Got duplicated Windows, Underlying already received: " +

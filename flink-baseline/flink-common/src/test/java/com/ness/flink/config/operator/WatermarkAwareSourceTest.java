@@ -20,7 +20,7 @@ import com.ness.flink.config.properties.WatermarkProperties;
 import java.util.Map;
 import java.util.Optional;
 import lombok.experimental.SuperBuilder;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +37,7 @@ class WatermarkAwareSourceTest {
         var watermarkProperties = WatermarkProperties.from("watermarkCustom", ParameterTool.fromMap(Map.of()));
         CustomSource<TestPojo> myCustom = CustomSource.<TestPojo>builder().watermarkProperties(watermarkProperties).build();
         var watermarkStrategy = myCustom.buildWatermarkStrategy(null);
-        var watermarkGenerator = watermarkStrategy.createWatermarkGenerator(() -> null);
+        var watermarkGenerator = watermarkStrategy.createWatermarkGenerator(org.mockito.Mockito.mock(org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier.Context.class));
         Assertions.assertNotNull(watermarkStrategy);
         Assertions.assertNotNull(watermarkGenerator);
     }

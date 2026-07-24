@@ -17,10 +17,8 @@
 package com.ness.flink.config.properties;
 
 import static com.ness.flink.config.properties.OperatorPropertiesFactory.DEFAULT_CONFIG_FILE;
-import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,7 +29,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.connector.kafka.source.KafkaSourceOptions;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -91,17 +89,15 @@ public class KafkaConsumerProperties extends KafkaProperties implements RawPrope
     public Properties buildProperties(@Nullable RawProperties<?> secretProviderProperties) {
         Properties consumerProperties = new Properties();
         Map<String, String> filtered = filterNonConsumerProperties();
-        String masked = replaceKafkaCredentials(filtered, secretProviderProperties);
+        replaceKafkaCredentials(filtered, secretProviderProperties);
         // We should provide unique prefix (in our case it's Operator name) for building "client.id"
         filtered.putIfAbsent(KafkaSourceOptions.CLIENT_ID_PREFIX.key(), getName());
         consumerProperties.putAll(filtered);
 
-        HashMap<Object, Object> forPrint = new HashMap<>(consumerProperties);
-        if (masked != null) {
-            // Masks credential configuration
-            forPrint.replace(SASL_JAAS_CONFIG, masked);
+        // Always mask credential-bearing keys before logging (inline or secret-manager sourced).
+        if (log.isInfoEnabled()) {
+            log.info("Building Kafka ConsumerProperties: properties={}", redactForLogging(consumerProperties));
         }
-        log.info("Building Kafka ConsumerProperties: properties={}", forPrint);
         return consumerProperties;
     }
 

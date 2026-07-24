@@ -19,7 +19,7 @@ package com.ness.flink.example.pipeline.snapshot;
 import com.ness.flink.example.pipeline.domain.intermediate.InterestRates;
 import com.ness.flink.snapshot.context.ContextMetadata;
 import com.ness.flink.snapshot.redis.SnapshotData;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.util.ParameterTool;
 
 import java.io.IOException;
 import java.io.Serializable;

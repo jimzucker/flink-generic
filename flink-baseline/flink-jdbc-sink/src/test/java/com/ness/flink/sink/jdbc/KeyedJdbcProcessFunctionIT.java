@@ -18,19 +18,20 @@ package com.ness.flink.sink.jdbc;
 
 import com.ness.flink.config.operator.DefaultSource;
 import com.ness.flink.config.operator.KeyedProcessorDefinition;
-import com.ness.flink.sink.jdbc.JdbcSinkIT.TestSourceFunction;
 import com.ness.flink.sink.jdbc.core.executor.JdbcStatementBuilder;
 import com.ness.flink.sink.jdbc.domain.Price;
 import com.ness.flink.sink.jdbc.domain.PriceWithEmissionTime;
 import com.ness.flink.sink.jdbc.properties.JdbcSinkProperties;
+import com.ness.flink.sink.jdbc.testsource.DelayedListSource;
 import com.ness.flink.stream.StreamBuilder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.util.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import org.apache.flink.api.connector.sink2.Sink;
+import org.apache.flink.api.connector.sink2.SinkWriter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,8 +85,7 @@ class KeyedJdbcProcessFunctionIT {
     void shouldSkipSomeWrongRecords() {
         StreamBuilder streamBuilder = StreamBuilder.from(params);
 
-        DefaultSource<Price> testSource = source(TestSourceFunction.from(
-                    notSafeJdbcSinkProperties.getMaxWaitThreshold() + 5000,
+        DefaultSource<Price> testSource = source(
                     Price.builder().id(1).value(new BigDecimal("23.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(2).value(new BigDecimal("5.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build(),
@@ -95,7 +95,7 @@ class KeyedJdbcProcessFunctionIT {
                     Price.builder().id(6).currencyNum("USD").value(new BigDecimal("6.9")).sourceId("127.0.0.3").build(),
                     // duplicate
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build()
-                ));
+                );
 
         String sql = "INSERT INTO price (id, timestamp, sourceIp, price, currencyNum) values (?, ?, ?, ?, ?)"
             + " ON DUPLICATE KEY UPDATE timestamp = ?, sourceIp = ?, price = ?, currencyNum = ?";
@@ -146,8 +146,7 @@ class KeyedJdbcProcessFunctionIT {
     void shouldExecuteJob() {
         StreamBuilder streamBuilder = StreamBuilder.from(params);
 
-        DefaultSource<Price> testSource = source(TestSourceFunction.from(
-                    jdbcSinkProperties.getMaxWaitThreshold() + 5000,
+        DefaultSource<Price> testSource = source(
                     Price.builder().id(1).value(new BigDecimal("23.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(2).value(new BigDecimal("5.2")).sourceId("127.0.0.1").build(),
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build(),
@@ -155,7 +154,7 @@ class KeyedJdbcProcessFunctionIT {
                     Price.builder().id(5).value(new BigDecimal("6.9")).sourceId("127.0.0.3").build(),
                     // duplicate
                     Price.builder().id(3).value(new BigDecimal("6.2")).sourceId("127.0.0.1").build()
-                ));
+                );
 
         String sql = "INSERT INTO price (id, timestamp, sourceIp, price) values (?, ?, ?, ?)"
             + " ON DUPLICATE KEY UPDATE timestamp = ?, sourceIp = ?, price = ?";
@@ -197,11 +196,19 @@ class KeyedJdbcProcessFunctionIT {
         Assertions.assertEquals(5, getRecordsNumber(), "Table should contains only this number of records");
     }
 
-    private DefaultSource<Price> source(SourceFunction<Price> sourceFunction) {
+    private DefaultSource<Price> source(Price... prices) {
         return new DefaultSource<>("test.source") {
             @Override
             public SingleOutputStreamOperator<Price> build(StreamExecutionEnvironment streamExecutionEnvironment) {
-                return streamExecutionEnvironment.addSource(sourceFunction);
+                // Flink 2.x: bounded source replacing the removed addSource(SourceFunction). Lingers after
+                // emitting so the KeyedJdbcProcessFunction processing-time timer (test.jdbc.sink inherits
+                // maxWaitThreshold=10s) fires and flushes/emits the sub-batchSize records before the job ends.
+                // Plain fromData() finishes in ms, and Flink does not fire pending processing-time timers on
+                // bounded-source finish. Linger must exceed the 10s threshold.
+                return streamExecutionEnvironment
+                    .fromSource(DelayedListSource.of(Price.class, 12_000L, prices),
+                        WatermarkStrategy.noWatermarks(), "test.source")
+                    .returns(Price.class);
             }
             @Override
             public Optional<Integer> getMaxParallelism() {
@@ -234,14 +241,7 @@ class KeyedJdbcProcessFunctionIT {
             .stream()
             .source(testSource)
             .addKeyedProcessor(stringPricePriceWithEmissionTimeKeyedProcessorDefinition)
-            .addSink(() -> new SinkFunction<>() {
-                private static final long serialVersionUID = -2159861918086239581L;
-
-                @Override
-                public void invoke(PriceWithEmissionTime value, Context context) {
-                    PRICE_WITH_EMISSION_TIMES.add(value);
-                }
-            })
+            .addSink(CollectingSink::new)
             .build()
             .run("test.jdbc.sink");
     }
@@ -258,6 +258,35 @@ class KeyedJdbcProcessFunctionIT {
             stmt.close();
         }
         return 0;
+    }
+
+    /**
+     * Sink2 sink that collects values into the static {@link #PRICE_WITH_EMISSION_TIMES} list.
+     * Declared {@code static} so it does not capture the (non-serializable) enclosing test instance
+     * when Flink serializes it.
+     */
+    private static final class CollectingSink implements Sink<PriceWithEmissionTime> {
+        private static final long serialVersionUID = -2159861918086239581L;
+
+        @Override
+        public SinkWriter<PriceWithEmissionTime> createWriter(org.apache.flink.api.connector.sink2.WriterInitContext context) {
+            return new SinkWriter<>() {
+                @Override
+                public void write(PriceWithEmissionTime value, Context ctx) {
+                    PRICE_WITH_EMISSION_TIMES.add(value);
+                }
+
+                @Override
+                public void flush(boolean endOfInput) {
+                    // no-op
+                }
+
+                @Override
+                public void close() {
+                    // no-op
+                }
+            };
+        }
     }
 
 }

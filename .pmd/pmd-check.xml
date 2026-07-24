@@ -37,7 +37,23 @@
         Based on https://github.com/apache/maven-pmd-plugin/blob/master/src/main/resources/rulesets/java/maven-pmd-plugin-default.xml
         Plus added some additional
     </description>
-    <rule ref="category/java/bestpractices.xml"/>
+    <!--
+      PMD 7 (maven-pmd-plugin 3.28.0 / PMD 7.17). PMD 7 is stricter than the PMD 6 line this project
+      was previously green on. The ~54 sites it newly flagged were fixed in the code (UTF-8 charsets,
+      @FunctionalInterface, guarded logs, literal-first comparisons, etc.); a small number of
+      design/metric rules are handled by targeted class-level @SuppressWarnings (CouplingBetweenObjects,
+      DataClass, UselessPureMethodCall). Only the three rules below stay category-excluded, each a
+      deliberate style/policy choice rather than an un-done fix.
+    -->
+    <rule ref="category/java/bestpractices.xml">
+        <!-- New in PMD 7: flags a @SuppressWarnings("PMD.X") whenever rule X does not currently
+             fire on that element. Fragile with defensively-kept suppressions and Lombok-generated
+             members (e.g. AbstractClassWithoutAnyMethod on @SuperBuilder POJOs). -->
+        <exclude name="UnnecessaryWarningSuppression"/>
+        <!-- POLICY: this codebase deliberately keeps a defensive throwing `default` on enum switches
+             to guard against enum evolution at runtime. -->
+        <exclude name="ExhaustiveSwitchHasDefault"/>
+    </rule>
 
     <rule ref="category/java/codestyle.xml">
         <exclude name="LocalVariableCouldBeFinal"/>
@@ -45,6 +61,8 @@
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="OnlyOneReturn"/>
         <exclude name="AtLeastOneConstructor"/>
+        <!-- POLICY: this codebase deliberately uses `var` for local type inference. -->
+        <exclude name="UseExplicitTypes"/>
     </rule>
 
     <rule ref="category/java/design.xml">
@@ -53,5 +71,12 @@
         <exclude name="LoosePackageCoupling"/>
     </rule>
     <rule ref="category/java/errorprone.xml"/>
+    <!-- Allow the idiomatic ++idx JDBC-parameter / index++ pattern; still flags assignments in
+         if/while conditions and for-updates. -->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowIncrementDecrement" value="true"/>
+        </properties>
+    </rule>
     <rule ref="category/java/performance.xml"/>
 </ruleset>

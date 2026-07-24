@@ -86,7 +86,7 @@ public class JdbcSinkBuilder<S> extends DefaultSink<S> {
         private final AbstractSinkWriter<T> outputFormat;
 
         @Override
-        public org.apache.flink.api.connector.sink2.SinkWriter<T> createWriter(InitContext context) throws IOException {
+        public org.apache.flink.api.connector.sink2.SinkWriter<T> createWriter(org.apache.flink.api.connector.sink2.WriterInitContext context) throws IOException {
             outputFormat.open(context);
             return outputFormat;
         }

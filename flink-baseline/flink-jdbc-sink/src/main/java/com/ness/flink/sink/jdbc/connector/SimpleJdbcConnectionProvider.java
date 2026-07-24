@@ -31,6 +31,9 @@ import org.apache.flink.util.Preconditions;
  * @author Khokhlov Pavel
  */
 @Slf4j
+// The static-block DriverManager.getDrivers() call is intentional: it forces DriverManager class
+// initialization (side effect), not its return value.
+@SuppressWarnings("PMD.UselessPureMethodCall")
 public class SimpleJdbcConnectionProvider implements JdbcConnectionProvider {
     private static final long serialVersionUID = 1L;
 
@@ -69,8 +72,8 @@ public class SimpleJdbcConnectionProvider implements JdbcConnectionProvider {
         // * driver is not installed as a service provider.
         Class<?> clazz = Class.forName(driverName, true, Thread.currentThread().getContextClassLoader());
         try {
-            return (Driver) clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return (Driver) clazz.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
             throw new SQLException("Fail to create driver of class " + driverName, e);
         }
     }

@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.flink.api.connector.sink2.Sink.InitContext;
+import org.apache.flink.api.connector.sink2.WriterInitContext;
 import org.apache.flink.metrics.Histogram;
 import org.apache.flink.util.concurrent.ExecutorThreadFactory;
 
@@ -87,12 +87,12 @@ public class JdbcBatchingOutputFormat<R, T, J extends JdbcBatchStatementExecutor
     /**
      * Connects to the target database and initializes the prepared statement.
      *
-     * @param context InitContext
+     * @param context WriterInitContext
      */
     @SneakyThrows
     @Override
     @SuppressWarnings("PMD.AvoidCatchingGenericException")
-    public void open(InitContext context) {
+    public void open(WriterInitContext context) {
         super.open(context);
         jdbcStatementExecutor = statementExecutorFactory.apply(context);
         recoveryOperations = new RecoveryOperations(jdbcConnectionProvider, jdbcExecutionOptions, jdbcStatementExecutor);
@@ -103,7 +103,9 @@ public class JdbcBatchingOutputFormat<R, T, J extends JdbcBatchStatementExecutor
 
         if (jdbcExecutionOptions.getBatchCheckIntervalMs() != 0 && jdbcExecutionOptions.getBatchSize() != 1) {
             // Register one thread in background since we have to emit batch which couldn't be fulled by incoming data
-            this.scheduler = Executors.newSingleThreadScheduledExecutor(new ExecutorThreadFactory("jdbc-scheduled-" + context.getSubtaskId()));
+            // Flink 2.x WriterInitContext no longer exposes getSubtaskId(); use the subtask index from metrics.
+            this.scheduler = Executors.newSingleThreadScheduledExecutor(new ExecutorThreadFactory(
+                "jdbc-scheduled-" + context.metricGroup().getAllVariables().getOrDefault("<subtask_index>", "0")));
             this.scheduledFuture = this.scheduler.scheduleWithFixedDelay(() -> {
                 if (!closed && flushRequired()) {
                     try {

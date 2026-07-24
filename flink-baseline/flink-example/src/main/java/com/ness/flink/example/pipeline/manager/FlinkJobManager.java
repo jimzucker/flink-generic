@@ -17,6 +17,7 @@
 package com.ness.flink.example.pipeline.manager;
 
 
+import com.google.common.annotations.VisibleForTesting;
 import com.ness.flink.example.pipeline.config.JobMode;
 import com.ness.flink.example.pipeline.config.properties.ApplicationProperties;
 import com.ness.flink.example.pipeline.manager.stream.InterestRateStream;
@@ -37,7 +38,16 @@ public class FlinkJobManager {
         StreamBuilder streamBuilder = StreamBuilder.from(args);
         ApplicationProperties applicationProperties = ApplicationProperties.from(streamBuilder.getParameterTool());
         JobMode jobMode = applicationProperties.getJobMode();
-        final boolean interestRatesKafkaSnapshotEnabled = applicationProperties.isInterestRatesKafkaSnapshotEnabled();
+        buildStreams(streamBuilder, jobMode, applicationProperties.isInterestRatesKafkaSnapshotEnabled());
+        streamBuilder.run(jobMode.getJobName());
+    }
+
+    /**
+     * Wires the streams required for the given {@link JobMode} onto {@code streamBuilder}. Extracted from
+     * {@link #runJob} so the mode dispatch can be unit-tested without executing a Flink job.
+     */
+    @VisibleForTesting
+    static void buildStreams(StreamBuilder streamBuilder, JobMode jobMode, boolean interestRatesKafkaSnapshotEnabled) {
         switch (jobMode) {
             case FULL:
                 InterestRateStream.build(streamBuilder, interestRatesKafkaSnapshotEnabled);
@@ -52,6 +62,5 @@ public class FlinkJobManager {
             default:
                 throw new UnsupportedOperationException(String.format("Unsupported jobMode: %s", jobMode));
         }
-        streamBuilder.run(jobMode.getJobName());
     }
 }

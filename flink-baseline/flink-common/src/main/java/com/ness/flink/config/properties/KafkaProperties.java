@@ -23,7 +23,9 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import com.google.common.annotations.VisibleForTesting;
 import com.ness.flink.security.Credentials;
 import com.ness.flink.security.SecretsProviderFactory;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -69,6 +71,28 @@ public abstract class KafkaProperties {
     public abstract Properties buildProperties(@Nullable RawProperties<?> secretProviderProperties);
 
     /**
+     * Builds a copy of the given Kafka properties that is safe to log: any value under a
+     * credential-bearing key (SASL JAAS config, passwords, basic-auth user info, SSL passwords) is
+     * masked, whether the credential was injected from a secret manager OR provided inline. This
+     * prevents plaintext credential leakage at INFO level.
+     * @param properties resolved Kafka properties
+     * @return a masked copy for logging
+     */
+    protected static Map<Object, Object> redactForLogging(Properties properties) {
+        Map<Object, Object> forPrint = new HashMap<>(properties);
+        forPrint.replaceAll((key, value) ->
+            isSensitiveKey(String.valueOf(key)) ? MASKED_VALUE.toString() : value);
+        return forPrint;
+    }
+
+    private static boolean isSensitiveKey(String key) {
+        String normalized = key.toLowerCase(Locale.ROOT);
+        return SASL_JAAS_CONFIG.equals(normalized)
+            || normalized.contains("password")
+            || normalized.contains("basic.auth.user.info");
+    }
+
+    /**
      * Provides Confluent Schema Registry URL
      * @return Confluent Schema Registry URL
      */
@@ -107,7 +131,8 @@ public abstract class KafkaProperties {
      * @param secretProviderProperties secret provider settings
      * @return Credentials if they required
      */
-    protected @Nullable Credentials getCredentials(String prefix, @Nullable RawProperties<?> secretProviderProperties) {
+    @Nullable
+    protected Credentials getCredentials(String prefix, @Nullable RawProperties<?> secretProviderProperties) {
         String secretName = rawValues.get(prefix + SECRET_NAME);
         if (secretName != null) {
             var errorMsg = String.format("Secret name provided %s", secretName);

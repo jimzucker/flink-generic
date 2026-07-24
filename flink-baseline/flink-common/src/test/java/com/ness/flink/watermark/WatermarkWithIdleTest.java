@@ -38,7 +38,7 @@ class WatermarkWithIdleTest {
 
         var watermarkWithIdle = new WatermarkWithIdle<TestPojo>(Duration.ZERO, Duration.ofMillis(idlenessDetectionDuration));
         WindowBasedWatermarkGenerator<TestPojo> watermarkGenerator = (WindowBasedWatermarkGenerator<TestPojo>)
-            watermarkWithIdle.createWatermarkGenerator(() -> null);
+            watermarkWithIdle.createWatermarkGenerator(org.mockito.Mockito.mock(org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier.Context.class));
         long now = 1715860522677L;
 
         watermarkGenerator = Mockito.spy(watermarkGenerator);
