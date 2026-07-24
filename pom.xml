@@ -49,7 +49,7 @@
              ecosystem (org.testcontainers:mysql / :jdbc / :database-commons are not published for
              2.x, and core 2.0.5 ships no JdbcDatabaseContainer), so the MySQL ITs cannot run on it. -->
         <test.containers.version>1.21.4</test.containers.version>
-        <netty.version>4.1.118.Final</netty.version>
+        <netty.version>4.2.16.Final</netty.version>
     </properties>
 
     <repositories>
