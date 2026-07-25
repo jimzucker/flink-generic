@@ -39,12 +39,12 @@
         <flink.version>2.3.0</flink.version>
         <flink.connector.kafka>5.0.0-2.2</flink.connector.kafka>
         <jackson.version>2.22.1</jackson.version>
-        <redis.lettuce.version>5.3.7.RELEASE</redis.lettuce.version>
+        <redis.lettuce.version>7.6.0.RELEASE</redis.lettuce.version>
         <log4j.version>2.25.1</log4j.version>
         <dropwizard.metrics.version>4.2.39</dropwizard.metrics.version>
         <aws-kinesisanalytics-runtime.version>1.2.0</aws-kinesisanalytics-runtime.version>
         <aws.glue.flink.serde.version>1.1.27</aws.glue.flink.serde.version>
-        <aws.secret.manager.version>1.0.2</aws.secret.manager.version>
+        <aws.secret.manager.version>2.0.0</aws.secret.manager.version>
     </properties>
 
     <dependencyManagement>

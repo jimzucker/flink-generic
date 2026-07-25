@@ -114,7 +114,11 @@
       "Bash(perl -pi -e 's{<log4j.version>2\\\\.19\\\\.0</log4j.version>}{<log4j.version>2.25.1</log4j.version>}' flink-baseline/pom.xml)",
       "Bash(perl -pi -e 's{<dropwizard.metrics.version>4\\\\.1\\\\.10\\\\.1</dropwizard.metrics.version>}{<dropwizard.metrics.version>4.2.39</dropwizard.metrics.version>}' flink-baseline/pom.xml)",
       "Bash(perl -pi -e 's{<aws.glue.flink.serde.version>1\\\\.1\\\\.14</aws.glue.flink.serde.version>}{<aws.glue.flink.serde.version>1.1.27</aws.glue.flink.serde.version>}' flink-baseline/pom.xml)",
-      "Bash(perl -pi -e 's{<guava.version>33\\\\.5\\\\.0-jre</guava.version>}{<guava.version>33.6.0-jre</guava.version>}' pom.xml)"
+      "Bash(perl -pi -e 's{<guava.version>33\\\\.5\\\\.0-jre</guava.version>}{<guava.version>33.6.0-jre</guava.version>}' pom.xml)",
+      "Bash(perl -pi -e 's{<artifactId>junit-bom</artifactId>\\\\s*\\\\n\\(\\\\s*\\)<version>5\\\\.9\\\\.1</version>}{<artifactId>junit-bom</artifactId>\\\\n${1}<version>6.1.2</version>}' pom.xml)",
+      "Bash(perl -pi -e 's{<artifactId>junit-pioneer</artifactId>\\\\s*\\\\n\\(\\\\s*\\)<version>1\\\\.9\\\\.0</version>}{<artifactId>junit-pioneer</artifactId>\\\\n${1}<version>2.3.0</version>}' pom.xml)",
+      "Bash(perl -pi -e 's{<version>5\\\\.9\\\\.1</version>}{<version>6.1.2</version>}' pom.xml)",
+      "Bash(perl -pi -e 's{<version>1\\\\.9\\\\.0</version>}{<version>2.3.0</version>}' pom.xml)"
     ]
   }
 }
