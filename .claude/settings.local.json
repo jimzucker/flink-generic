@@ -108,7 +108,13 @@
       "Bash(unzip -l /private/tmp/claude-501/-Users-jimzucker-code-GitHub-flink-generic/bbde328a-a106-4bbc-916a-0c730a9627b6/scratchpad/tc201.jar)",
       "Bash(curl -s \"https://repo.maven.apache.org/maven2/org/testcontainers/testcontainers-junit-jupiter/maven-metadata.xml\")",
       "Bash(perl -pi -e 's{apache-maven-[0-9.]+}{apache-maven-3.9.9}g' .mvn/wrapper/maven-wrapper.properties)",
-      "Bash(perl -pi -e 's{distributionUrl=.*}{distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip}' .mvn/wrapper/maven-wrapper.properties)"
+      "Bash(perl -pi -e 's{distributionUrl=.*}{distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip}' .mvn/wrapper/maven-wrapper.properties)",
+      "Bash(grep -vE \"^\\\\s*$\")",
+      "Bash(perl -pi -e 's{<jackson.version>2\\\\.15\\\\.3</jackson.version>}{<jackson.version>2.22.1</jackson.version>}' flink-baseline/pom.xml)",
+      "Bash(perl -pi -e 's{<log4j.version>2\\\\.19\\\\.0</log4j.version>}{<log4j.version>2.25.1</log4j.version>}' flink-baseline/pom.xml)",
+      "Bash(perl -pi -e 's{<dropwizard.metrics.version>4\\\\.1\\\\.10\\\\.1</dropwizard.metrics.version>}{<dropwizard.metrics.version>4.2.39</dropwizard.metrics.version>}' flink-baseline/pom.xml)",
+      "Bash(perl -pi -e 's{<aws.glue.flink.serde.version>1\\\\.1\\\\.14</aws.glue.flink.serde.version>}{<aws.glue.flink.serde.version>1.1.27</aws.glue.flink.serde.version>}' flink-baseline/pom.xml)",
+      "Bash(perl -pi -e 's{<guava.version>33\\\\.5\\\\.0-jre</guava.version>}{<guava.version>33.6.0-jre</guava.version>}' pom.xml)"
     ]
   }
 }
