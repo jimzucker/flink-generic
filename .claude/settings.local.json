@@ -120,7 +120,11 @@
       "Bash(perl -pi -e 's{<version>5\\\\.9\\\\.1</version>}{<version>6.1.2</version>}' pom.xml)",
       "Bash(perl -pi -e 's{<version>1\\\\.9\\\\.0</version>}{<version>2.3.0</version>}' pom.xml)",
       "Bash(curl -s \"https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot/maven-metadata.xml\")",
-      "Bash(perl -pi -e 's{<artifactId>maven-pmd-plugin</artifactId>\\\\s*\\\\n\\(\\\\s*\\)<version>3\\\\.20\\\\.0</version>}{<artifactId>maven-pmd-plugin</artifactId>\\\\n${1}<version>3.28.0</version>}' pom.xml)"
+      "Bash(perl -pi -e 's{<artifactId>maven-pmd-plugin</artifactId>\\\\s*\\\\n\\(\\\\s*\\)<version>3\\\\.20\\\\.0</version>}{<artifactId>maven-pmd-plugin</artifactId>\\\\n${1}<version>3.28.0</version>}' pom.xml)",
+      "Bash(python3 -c \"import sys,json; [print\\(r['databaseId'], r['headBranch'], r['status'], r['conclusion'], '|', r['displayTitle'][:50]\\) for r in json.load\\(sys.stdin\\)]\")",
+      "Bash(xargs git log --oneline -1)",
+      "Bash(git reset *)",
+      "Bash(git ls-tree *)"
     ]
   }
 }
