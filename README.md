@@ -28,10 +28,11 @@ order. This library pulls that into reusable components so you can focus on busi
 
 ### ⭐ Highlight: declarative per-operator parallelism
 
-Native Flink lets you set a single **global** default parallelism (`parallelism.default` / `-p`), or tune an
-individual operator **in code** with a hardcoded `.setParallelism(n)` — which means editing and redeploying the
-job to retune. This library externalizes that: each named operator's parallelism is read from the layered
-config, so you can size operators independently by editing configuration alone.
+Native Flink has **no declarative, per-operator** parallelism: your only choices are a single **global**
+default (`parallelism.default` / `-p`) or a hardcoded in-code `.setParallelism(n)` on each operator — which
+means editing and redeploying the job to retune. This library fills that gap: each named operator's
+parallelism is read from the layered config, so you can size operators independently by editing configuration
+alone.
 
 ```yaml
 # application.yml — keyed by operator name
