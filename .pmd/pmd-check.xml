@@ -38,19 +38,22 @@
         Plus added some additional
     </description>
     <!--
-      PMD 7 (maven-pmd-plugin 3.28.0 / PMD 7.17) is substantially stricter than the PMD 6 line this
-      project was green on. The rules excluded below are new-in-7 or newly-firing-in-7; they are
-      excluded so the engine upgrade keeps the SAME effective policy PMD 6 enforced (no code churn).
-      Re-enabling them and fixing the flagged sites is a separate code-quality follow-up.
+      PMD 7 (maven-pmd-plugin 3.28.0 / PMD 7.17). Full strict linting: every category is enabled and
+      all newly-firing-in-7 sites were fixed in the code. The only remaining exclusions are the
+      pre-existing PMD-6 policy excludes (codestyle/design, below) plus two deliberate PMD-7 policy
+      decisions documented inline: ExhaustiveSwitchHasDefault (defensive throwing defaults) and
+      AssignmentInOperand configured to allow ++idx (idiomatic JDBC parameter indexing).
     -->
     <rule ref="category/java/bestpractices.xml">
-        <exclude name="UnnecessaryWarningSuppression"/>
+        <!-- POLICY: this codebase keeps a defensive throwing `default` on enum switches to guard
+             against enum evolution at runtime; several are statement switches where the default
+             cannot be moved after the switch without losing the guard. Deliberate, not a gap. -->
         <exclude name="ExhaustiveSwitchHasDefault"/>
-        <exclude name="LooseCoupling"/>
+        <!-- POLICY: all logging uses SLF4J parameterized calls (log.debug("{}", x)), which already
+             skip message formatting when the level is disabled, so an explicit isDebugEnabled()
+             guard is redundant and only adds noise. The rule can't tell cheap args from expensive
+             ones and fires on any computed argument; guarding by hand is not worth the churn. -->
         <exclude name="GuardLogStatement"/>
-        <exclude name="ImplicitFunctionalInterface"/>
-        <exclude name="LiteralsFirstInComparisons"/>
-        <exclude name="RelianceOnDefaultCharset"/>
     </rule>
 
     <rule ref="category/java/codestyle.xml">
@@ -59,23 +62,20 @@
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="OnlyOneReturn"/>
         <exclude name="AtLeastOneConstructor"/>
-        <exclude name="CommentDefaultAccessModifier"/>
-        <exclude name="ModifierOrder"/>
-        <exclude name="UseExplicitTypes"/>
     </rule>
 
     <rule ref="category/java/design.xml">
         <exclude name="LawOfDemeter"/>
         <exclude name="SignatureDeclareThrowsException"/>
         <exclude name="LoosePackageCoupling"/>
-        <exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal"/>
-        <exclude name="CouplingBetweenObjects"/>
-        <exclude name="DataClass"/>
-        <exclude name="SimplifyBooleanReturns"/>
     </rule>
-    <rule ref="category/java/errorprone.xml">
-        <exclude name="AssignmentInOperand"/>
-        <exclude name="UselessPureMethodCall"/>
+    <rule ref="category/java/errorprone.xml"/>
+    <!-- Keep AssignmentInOperand enabled for real cases (if/while conditions, for-updates) but allow
+         the idiomatic ++idx JDBC-parameter / index++ pattern used throughout the sink code. -->
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <properties>
+            <property name="allowIncrementDecrement" value="true"/>
+        </properties>
     </rule>
     <rule ref="category/java/performance.xml"/>
 </ruleset>
