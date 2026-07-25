@@ -44,7 +44,7 @@
         <sonar.organization>ness.com</sonar.organization>
         <lombok.version>1.18.46</lombok.version>
         <guava.version>33.6.0-jre</guava.version>
-        <spring.boot.version>2.5.14</spring.boot.version>
+        <spring.boot.version>3.5.16</spring.boot.version>
         <test.containers.version>2.0.1</test.containers.version>
         <netty.version>4.2.16.Final</netty.version>
     </properties>
