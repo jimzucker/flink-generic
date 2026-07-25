@@ -36,8 +36,8 @@
     <artifactId>flink-baseline</artifactId>
 
     <properties>
-        <flink.version>2.2.0</flink.version>
-        <flink.connector.kafka>4.0.1-2.0</flink.connector.kafka>
+        <flink.version>2.3.0</flink.version>
+        <flink.connector.kafka>5.0.0-2.2</flink.connector.kafka>
         <jackson.version>2.22.1</jackson.version>
         <redis.lettuce.version>5.3.7.RELEASE</redis.lettuce.version>
         <log4j.version>2.25.1</log4j.version>
