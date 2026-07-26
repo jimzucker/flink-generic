@@ -392,12 +392,12 @@
                         <configuration>
                             <!-- Fail the build on any dependency with a CVE scoring CVSS >= 7 (High/Critical) -->
                             <failBuildOnCVSS>7</failBuildOnCVSS>
-                            <!-- Only the CVSS gate above should fail the build; a transient tool/NVD
-                                 error (network blip, malformed feed record) should not. The specific
-                                 VARCHAR(1000) URL crash that motivated this is FIXED by the 12.2.2 bump,
-                                 so this is now defense-in-depth. Flip to true for a strict gate that also
-                                 fails when the scan itself cannot complete (avoids a silent false-green). -->
-                            <failOnError>false</failOnError>
+                            <!-- Strict gate: fail the build if the scan itself cannot complete, not just
+                                 on the CVSS threshold. This avoids a silent false-green from an incomplete
+                                 NVD load. Safe now that 12.2.2 fixed the VARCHAR(1000) URL crash (PR #8467);
+                                 a genuine future tool/NVD error will surface as a red run to investigate,
+                                 rather than being swallowed. -->
+                            <failOnError>true</failOnError>
                             <nvdApiKey>${nvd.api.key}</nvdApiKey>
                             <suppressionFiles>
                                 <suppressionFile>.owasp/suppressions.xml</suppressionFile>
