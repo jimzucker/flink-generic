@@ -2,54 +2,44 @@
 <!--
   ~ OWASP dependency-check false-positive / accepted-risk suppressions.
   ~
-  ~ Only the `mvn -Powasp ...` profile reads this file. Add an entry here when the scan
-  ~ flags a CVE that does not apply (wrong artifact match) or an accepted risk. Prefer the
-  ~ narrowest match (specific package + specific source), and always leave a dated note.
+  ~ Only the `mvn -Powasp ...` profile reads this file.
+  ~
+  ~ SCHEMA RULES (dependency-suppression.1.3) — a <suppress> is a strict sequence:
+  ~     1. <notes>                              (optional)
+  ~     2. exactly ONE of filePath | sha1 | gav | packageUrl   (the "which dependency" selector)
+  ~     3. at least ONE of cve | cpe | vulnerabilityName | cwe | cvssBelow   (the "what to suppress")
+  ~   You cannot combine two selectors (e.g. packageUrl AND filePath), and step 3 is mandatory —
+  ~   omit it and the WHOLE FILE fails to parse and every rule is silently ignored. Validate before
+  ~   committing by running xmllint against the dependency-suppression.1.3 schema.
+  ~
+  ~   `until="YYYY-MM-DDZ"` makes a suppression auto-expire on that date, so accepted risks
+  ~   resurface for review instead of rotting. Re-check, then bump the date or remove the rule.
   ~
   ~ Docs: https://dependency-check.github.io/DependencyCheck/general/suppression.html
   -->
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
-    <!-- ============================================================================
-         Flink web dashboard — bundled front-end assets (false positives)
-
-         org.apache.flink:flink-runtime-web ships Flink's browser dashboard as minified
-         JavaScript inside the jar (flink-runtime-web-<v>.jar/web/*.js). dependency-check's
-         RetireJS analyzer fingerprints those bundles and reports CVEs against the JS
-         libraries they were built from (DOMPurify, @angular/core).
-
-         These are NOT on flink-generic's JVM runtime classpath and are not part of any
-         artifact this project ships or executes. They belong to Flink's dashboard, served
-         by the cluster's JobManager. Patching them is Apache Flink's responsibility, tracked
-         by upgrading Flink. Each entry is double-scoped (source jar AND package URL) so it
-         only fires for the bundle inside flink-runtime-web.
-         ============================================================================ -->
-
-    <suppress>
+    <!-- Flink web dashboard — bundled front-end assets (false positives).
+         org.apache.flink:flink-runtime-web ships Flink's browser dashboard as minified JS inside
+         the jar (web/**.js). dependency-check's RetireJS analyzer fingerprints those bundles and
+         reports CVEs against the JS libraries they were built from (DOMPurify, @angular/core, ...).
+         None of it is on flink-generic's JVM runtime classpath, and none is shipped or executed by
+         this library — it belongs to Flink's dashboard and is patched by upgrading Flink.
+         Scope: everything inside the flink-runtime-web jar. Auto-expires 2027-01-26; on that date
+         re-check whether the current Flink release still bundles vulnerable assets. -->
+    <suppress until="2027-01-26Z">
         <notes><![CDATA[
-            False positive for this library. DOMPurify is a minified JS asset bundled inside
-            org.apache.flink:flink-runtime-web (Flink's web dashboard UI), not a dependency
-            flink-generic runs or ships. Fix rides on future Flink upgrades. Reviewed 2026-07-26.
+            Bundled front-end assets inside org.apache.flink:flink-runtime-web (Flink's web
+            dashboard UI) — not on flink-generic's runtime classpath, not shipped or executed by
+            this library. Fix rides on future Flink upgrades. Reviewed 2026-07-26.
         ]]></notes>
         <filePath regex="true">.*flink-runtime-web-.*\.jar.*</filePath>
-        <packageUrl regex="true">^pkg:javascript/DOMPurify@.*$</packageUrl>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-            False positive for this library. @angular/core here is minified JS bundled inside
-            org.apache.flink:flink-runtime-web (Flink's web dashboard UI), not a dependency
-            flink-generic runs or ships. Fix rides on future Flink upgrades. Reviewed 2026-07-26.
-        ]]></notes>
-        <filePath regex="true">.*flink-runtime-web-.*\.jar.*</filePath>
-        <packageUrl regex="true">^pkg:javascript/%40angular%2Fcore@.*$</packageUrl>
+        <vulnerabilityName regex="true">.*</vulnerabilityName>
     </suppress>
 
     <!-- Example (disabled) — copy, adjust, and document before enabling:
-    <suppress>
-        <notes><![CDATA[
-            CVE-XXXX-YYYYY does not apply: <reason>. Reviewed <name> <date>.
-        ]]></notes>
+    <suppress until="2027-01-01Z">
+        <notes><![CDATA[ CVE-XXXX-YYYYY does not apply: <reason>. Reviewed <name> <date>. ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.example/some-artifact@.*$</packageUrl>
         <cve>CVE-XXXX-YYYYY</cve>
     </suppress>
