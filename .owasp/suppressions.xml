@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ OWASP dependency-check false-positive / accepted-risk suppressions.
+  ~
+  ~ Only the `mvn -Powasp ...` profile reads this file. Add an entry here when the scan
+  ~ flags a CVE that does not apply (wrong artifact match) or an accepted risk. Prefer the
+  ~ narrowest match (specific CVE + specific coordinates); always leave a note explaining why.
+  ~
+  ~ Docs: https://dependency-check.github.io/DependencyCheck/general/suppression.html
+  -->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!-- Example (disabled) — copy, adjust, and document before enabling:
+    <suppress>
+        <notes><![CDATA[
+            CVE-XXXX-YYYYY does not apply: <reason>. Reviewed <name> <date>.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.example/some-artifact@.*$</packageUrl>
+        <cve>CVE-XXXX-YYYYY</cve>
+    </suppress>
+    -->
+
+</suppressions>
