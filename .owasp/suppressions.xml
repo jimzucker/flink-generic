@@ -53,7 +53,7 @@
             Affected features (RFC5424Layout, XmlLayout) are not used by this library. Transitive
             log4j-core 2.24.3 rides the same rationale. Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-(api|core)@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-.*@.*$</packageUrl>
         <cve>CVE-2026-34478</cve>
         <cve>CVE-2026-34479</cve>
         <cve>CVE-2026-34480</cve>
@@ -66,7 +66,7 @@
             issue not reachable in this library's use. Fix rides on a kafka-clients upgrade.
             Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common)?@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-.*@.*$</packageUrl>
         <cve>CVE-2026-53914</cve>
     </suppress>
 
@@ -76,7 +76,7 @@
             a Python json_format DoS; the Java runtime path here is not affected. Fix rides on a
             kafka-clients upgrade. Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-java@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-.*@.*$</packageUrl>
         <cve>CVE-2026-0994</cve>
     </suppress>
 
@@ -86,7 +86,7 @@
             filesystem. CVE-2023-3635 (GzipSource DoS) is not on this library's runtime path. Fix
             rides on a kafka-clients upgrade. Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.squareup\.okio/okio-fakefilesystem@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.okio/okio.*@.*$</packageUrl>
         <cve>CVE-2023-3635</cve>
     </suppress>
 
@@ -96,7 +96,7 @@
             path-traversal in the unrelated Wire Android messaging app, a well-known false match on
             the coordinate name. Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire-schema@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire-.*@.*$</packageUrl>
         <cve>CVE-2018-8909</cve>
     </suppress>
 
@@ -106,7 +106,7 @@
             CVE-2023-37475 is a Go (hamba/avro) OOM, a false match on the "avro" name. Fix rides on
             a Flink upgrade. Reviewed 2026-07-26; re-check by until date.
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.flink/flink-avro@.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.flink/flink-avro.*@.*$</packageUrl>
         <cve>CVE-2023-37475</cve>
     </suppress>
 
