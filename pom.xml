@@ -388,15 +388,15 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>12.1.3</version>
+                        <version>12.2.2</version>
                         <configuration>
                             <!-- Fail the build on any dependency with a CVE scoring CVSS >= 7 (High/Critical) -->
                             <failBuildOnCVSS>7</failBuildOnCVSS>
-                            <!-- Do NOT fail the build on internal analysis/data errors (only on the CVSS
-                                 gate above). dependency-check 12.1.3 throws a fatal DatabaseException when
-                                 the NVD feed contains a reference URL longer than its H2 schema's
-                                 VARCHAR(1000) column (e.g. CVE-2026-6785/6786). That is a tool/data bug,
-                                 not a vulnerability in our code, and must not gate the build. -->
+                            <!-- Only the CVSS gate above should fail the build; a transient tool/NVD
+                                 error (network blip, malformed feed record) should not. The specific
+                                 VARCHAR(1000) URL crash that motivated this is FIXED by the 12.2.2 bump,
+                                 so this is now defense-in-depth. Flip to true for a strict gate that also
+                                 fails when the scan itself cannot complete (avoids a silent false-green). -->
                             <failOnError>false</failOnError>
                             <nvdApiKey>${nvd.api.key}</nvdApiKey>
                             <suppressionFiles>

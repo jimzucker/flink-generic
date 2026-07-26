@@ -31,8 +31,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: nvd-data-${{ runner.os }}
-          restore-keys: nvd-data-
+          # schema-versioned key: bump when the dependency-check DB schema changes
+          # (12.2.2 widened the URL column, schema 5.5 -> 5.6) so a stale-schema cache
+          # from an older plugin isn't reused. See DependencyCheck PR #8467.
+          key: nvd-data-schema5_6-${{ runner.os }}
+          restore-keys: nvd-data-schema5_6-
 
       - name: Run OWASP dependency-check (fail on CVSS >= 7)
         run: mvn -B -Powasp dependency-check:aggregate -Dnvd.api.key=${{ secrets.NVD_API_KEY }}
