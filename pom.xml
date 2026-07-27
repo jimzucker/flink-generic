@@ -365,4 +365,65 @@
         </pluginManagement>
     </build>
 
+    <profiles>
+        <!--
+            OWASP dependency-check CVE gate. OFF by default so `mvn verify` and every PR build stay
+            fast and never flake on NVD API outages. Run explicitly:
+
+                mvn -Powasp dependency-check:aggregate            (scan only, fastest)
+                mvn -Powasp verify                                (full build + scan)
+
+            The scheduled .github/workflows/owasp.yml runs it weekly with an NVD_API_KEY secret
+            (passed as -Dnvd.api.key=...). Without a key the scan still runs but is heavily
+            rate-limited by the NVD API. False positives are suppressed in .owasp/suppressions.xml.
+        -->
+        <profile>
+            <id>owasp</id>
+            <properties>
+                <!-- Empty by default; CI overrides with -Dnvd.api.key=${{ secrets.NVD_API_KEY }} -->
+                <nvd.api.key></nvd.api.key>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>12.2.2</version>
+                        <configuration>
+                            <!-- Fail the build on any dependency with a CVE scoring CVSS >= 7 (High/Critical) -->
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <!-- Strict gate: fail the build if the scan itself cannot complete, not just
+                                 on the CVSS threshold. This avoids a silent false-green from an incomplete
+                                 NVD load. Safe now that 12.2.2 fixed the VARCHAR(1000) URL crash (PR #8467);
+                                 a genuine future tool/NVD error will surface as a red run to investigate,
+                                 rather than being swallowed. -->
+                            <failOnError>true</failOnError>
+                            <nvdApiKey>${nvd.api.key}</nvdApiKey>
+                            <suppressionFiles>
+                                <suppressionFile>.owasp/suppressions.xml</suppressionFile>
+                            </suppressionFiles>
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
+                            <!-- Assembly analyzer needs .NET; irrelevant to a JVM project and noisy -->
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <!-- OSS Index requires an authenticated account; unauthenticated it is
+                                 rate-limited and errors on every artifact. NVD + RetireJS are enough. -->
+                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
