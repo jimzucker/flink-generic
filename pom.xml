@@ -46,7 +46,17 @@
         <guava.version>33.6.0-jre</guava.version>
         <spring.boot.version>3.5.16</spring.boot.version>
         <test.containers.version>2.0.1</test.containers.version>
-        <netty.version>4.2.16.Final</netty.version>
+        <netty.version>4.2.18.Final</netty.version>
+        <!-- CVE-remediation pins. These back the dependencyManagement entries below and the
+             jackson-bom / log4j-bom imports in flink-test-example. A directly-managed version (or a
+             BOM imported before spring-boot-dependencies) overrides the older versions Spring Boot's
+             BOM and the Flink/Kafka transitives would otherwise resolve. See each CVE in the tables. -->
+        <cve.jackson.version>2.22.1</cve.jackson.version>       <!-- CVE-2026-59889/54515 + 1 -->
+        <cve.log4j.version>2.25.5</cve.log4j.version>           <!-- CVE-2026-34477/34478/34480, CVE-2025-68161 -->
+        <commons-lang3.version>3.18.0</commons-lang3.version>   <!-- CVE-2025-48924 -->
+        <commons-compress.version>1.28.0</commons-compress.version> <!-- CVE-2024-26308/25710 -->
+        <assertj.version>3.27.7</assertj.version>               <!-- CVE-2026-24400 (XXE) -->
+        <zookeeper.version>3.9.2</zookeeper.version>            <!-- CVE-2023-44981 (CRITICAL), CVE-2024-23944 -->
     </properties>
 
     <repositories>
@@ -103,6 +113,38 @@
                 <version>${netty.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- CVE remediation for the flink-baseline subtree, which does NOT import Spring Boot's
+                 BOM and pulls these transitively (kafka test-utils, glue serde, flink). Direct
+                 management here beats the transitive versions; the flink-test-example copies are
+                 handled by the Spring Boot property overrides above. -->
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>       <!-- CVE-2023-44981 (CRITICAL), CVE-2024-23944 -->
+                <artifactId>zookeeper</artifactId>
+                <version>${zookeeper.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>                <!-- CVE-2026-24400 (XXE) -->
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>at.yawk.lz4</groupId>                <!-- CVE-2026-59949 (JVM crash) -->
+                <artifactId>lz4-java</artifactId>
+                <version>1.11.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>         <!-- CVE-2024-26308/25710 -->
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>         <!-- CVE-2025-48924 -->
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

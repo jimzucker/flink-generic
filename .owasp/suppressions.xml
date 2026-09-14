@@ -25,9 +25,9 @@
          reports CVEs against the JS libraries they were built from (DOMPurify, @angular/core, ...).
          None of it is on flink-generic's JVM runtime classpath, and none is shipped or executed by
          this library — it belongs to Flink's dashboard and is patched by upgrading Flink.
-         Scope: everything inside the flink-runtime-web jar. Auto-expires 2026-09-30; on that date
+         Scope: everything inside the flink-runtime-web jar. Auto-expires 2026-11-13; on that date
          re-check whether the current Flink release still bundles vulnerable assets. -->
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
             Bundled front-end assets inside org.apache.flink:flink-runtime-web (Flink's web
             dashboard UI) — not on flink-generic's runtime classpath, not shipped or executed by
@@ -38,28 +38,18 @@
     </suppress>
 
     <!-- ============================================================================
-         Accepted risk — no upstream fix available yet (auto-expire 2026-09-30).
+         Accepted risk — transitive false-positives / no upstream fix (auto-expire 2026-11-13).
 
-         These 15 CVSS>=7 findings are all transitive and have no patched release to bump to.
          Each rule lists the SPECIFIC accepted CVEs, so a *new* CVE on the same library still
          fails the build. Dependabot alerts (repo Security tab) will notify when fixes ship —
-         they are independent of these suppressions. On 2026-09-30 these expire: re-check whether
+         they are independent of these suppressions. On 2026-11-13 these expire: re-check whether
          upstream has released fixes, then bump the deps or refresh the dates.
+
+         NOTE: the log4j suppression that used to live here was REMOVED — log4j is now pinned to
+         2.25.5 (patched: CVE-2026-34477/34478/34480, CVE-2025-68161), a real fix, not a suppression.
          ============================================================================ -->
 
-    <suppress until="2026-09-30Z">
-        <notes><![CDATA[
-            Log4j 2.25.1 is already the newest 2.x line; no patched release exists for these yet.
-            Affected features (RFC5424Layout, XmlLayout) are not used by this library. Transitive
-            log4j-core 2.24.3 rides the same rationale. Reviewed 2026-07-26; re-check by until date.
-        ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-.*@.*$</packageUrl>
-        <cve>CVE-2026-34478</cve>
-        <cve>CVE-2026-34479</cve>
-        <cve>CVE-2026-34480</cve>
-    </suppress>
-
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
             kotlin-stdlib (1.9.25 / 1.7.10) is a transitive test/runtime dependency of the Kafka
             client stack (kafka-clients 4.2.0). CVE-2026-53914 is a build-cache deserialization
@@ -70,7 +60,7 @@
         <cve>CVE-2026-53914</cve>
     </suppress>
 
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
             protobuf-java (3.25.5 / 4.31.1) transitive from the Kafka client stack. CVE-2026-0994 is
             a Python json_format DoS; the Java runtime path here is not affected. Fix rides on a
@@ -80,7 +70,7 @@
         <cve>CVE-2026-0994</cve>
     </suppress>
 
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
             okio-fakefilesystem 3.2.0 transitive from the Kafka client stack; a test-only fake
             filesystem. CVE-2023-3635 (GzipSource DoS) is not on this library's runtime path. Fix
@@ -90,17 +80,22 @@
         <cve>CVE-2023-3635</cve>
     </suppress>
 
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
-            wire-schema 5.2.0 transitive from the Kafka client stack. CVE-2018-8909 is a
-            path-traversal in the unrelated Wire Android messaging app, a well-known false match on
-            the coordinate name. Reviewed 2026-07-26; re-check by until date.
+            com.squareup.wire:wire-* 5.2.0, transitive from the Kafka client stack.
+            - CVE-2018-8909: path-traversal in the unrelated Wire Android messaging app, a
+              well-known false match on the coordinate name.
+            - CVE-2026-45799 (HIGH): real DoS in wire's skipGroup(); fixed in wire 6.3.0, which is a
+              major bump held for its own branch (deps/wire-6) because it can break the AWS Glue
+              schema-registry serde compiled against wire 5. Accepted short-term until that lands.
+            Reviewed 2026-08-03; re-check by until date.
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.squareup\.wire/wire-.*@.*$</packageUrl>
         <cve>CVE-2018-8909</cve>
+        <cve>CVE-2026-45799</cve>
     </suppress>
 
-    <suppress until="2026-09-30Z">
+    <suppress until="2026-11-13Z">
         <notes><![CDATA[
             flink-avro 2.3.0 transitive from Apache Flink (provided-scope; the cluster supplies it).
             CVE-2023-37475 is a Go (hamba/avro) OOM, a false match on the "avro" name. Fix rides on
@@ -108,6 +103,37 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.flink/flink-avro.*@.*$</packageUrl>
         <cve>CVE-2023-37475</cve>
+    </suppress>
+
+    <suppress until="2026-11-13Z">
+        <notes><![CDATA[
+            org.springframework:spring-* 6.2.19, transitive from spring-boot in the flink-test-example
+            / flink-example harness modules only — spring appears in ZERO library modules
+            (flink-common, flink-jdbc-sink, flink-snapshot, flink-domain). This barrage of
+            CVE-2026-4788x / 5928x / 5931x is the Sept-2026 Spring Framework disclosure: the RCE/SSRF
+            paths require a running Spring MVC web app using XsltView or a "/**" view-render mapping,
+            which this library is not. NO patched Spring release exists yet (6.2.19 / Boot 3.5.16 are
+            the newest on Maven Central), so there is nothing to bump to. Accepted until a fix ships;
+            Dependabot will flag the patched Boot line. Reviewed 2026-09-14; re-check by until date.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@.*$</packageUrl>
+        <cve>CVE-2026-47883</cve>
+        <cve>CVE-2026-47884</cve>
+        <cve>CVE-2026-47885</cve>
+        <cve>CVE-2026-47886</cve>
+        <cve>CVE-2026-47887</cve>
+        <cve>CVE-2026-47888</cve>
+        <cve>CVE-2026-47889</cve>
+        <cve>CVE-2026-47890</cve>
+        <cve>CVE-2026-47891</cve>
+        <cve>CVE-2026-47892</cve>
+        <cve>CVE-2026-47893</cve>
+        <cve>CVE-2026-59280</cve>
+        <cve>CVE-2026-59281</cve>
+        <cve>CVE-2026-59282</cve>
+        <cve>CVE-2026-59283</cve>
+        <cve>CVE-2026-59313</cve>
+        <cve>CVE-2026-59314</cve>
     </suppress>
 
     <!-- Example (disabled) — copy, adjust, and document before enabling:
