@@ -56,7 +56,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>   <!-- CVE-2025-48924 -->
         <commons-compress.version>1.28.0</commons-compress.version> <!-- CVE-2024-26308/25710 -->
         <assertj.version>3.27.7</assertj.version>               <!-- CVE-2026-24400 (XXE) -->
-        <zookeeper.version>3.9.2</zookeeper.version>            <!-- CVE-2023-44981 (CRITICAL), CVE-2024-23944 -->
+        <zookeeper.version>3.9.5</zookeeper.version>            <!-- CVE-2023-44981 (CRITICAL), CVE-2024-23944 -->
     </properties>
 
     <repositories>
