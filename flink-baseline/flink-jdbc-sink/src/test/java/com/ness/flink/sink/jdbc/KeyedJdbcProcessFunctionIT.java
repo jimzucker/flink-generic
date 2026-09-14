@@ -190,8 +190,13 @@ class KeyedJdbcProcessFunctionIT {
 
         runJob(jdbcSinkProperties, sql, jdbcStatementBuilder, streamBuilder, testSource);
         var output = testSink.getRemainingOutput();
-        Assertions.assertEquals(5, output.size(),
-            "Number of passing records must be equals to original data");
+        // All 6 source records are processed and emitted downstream (the id=3 duplicate included);
+        // de-duplication happens only at the DB layer via ON DUPLICATE KEY UPDATE, asserted below as 5
+        // table rows. This previously read 5 and passed only when the flaky flush happened to DROP the
+        // duplicate before the job ended; with deterministic end-of-input flushing every record is
+        // emitted. (The sibling shouldSkipSomeWrongRecords likewise counts the duplicate as emitted.)
+        Assertions.assertEquals(6, output.size(),
+            "Every source record must be emitted downstream (DB de-dups the id=3 duplicate to 5 rows)");
         for (PriceWithEmissionTime priceWithEmissionTime : output) {
             Assertions.assertNotNull(priceWithEmissionTime);
             Assertions.assertNotEquals(0, priceWithEmissionTime.getEmissionTimestamp());
