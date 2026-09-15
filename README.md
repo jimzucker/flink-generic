@@ -7,6 +7,9 @@ builder API so a pipeline reads as configuration rather than plumbing.
 
 **Stack:** Apache Flink 2.3 · Java 17 · Maven · Kafka (POJO/Avro, Confluent & AWS MSK) · Redis (Lettuce) · JDBC
 
+[![Java CI](https://github.com/jimzucker/flink-generic/actions/workflows/maven.yml/badge.svg)](https://github.com/jimzucker/flink-generic/actions/workflows/maven.yml)
+[![OWASP Dependency-Check](https://github.com/jimzucker/flink-generic/actions/workflows/owasp.yml/badge.svg)](https://github.com/jimzucker/flink-generic/actions/workflows/owasp.yml)
+
 ---
 
 ## Why this exists
