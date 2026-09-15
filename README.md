@@ -7,6 +7,9 @@ builder API so a pipeline reads as configuration rather than plumbing.
 
 **Stack:** Apache Flink 2.3 · Java 17 · Maven · Kafka (POJO/Avro, Confluent & AWS MSK) · Redis (Lettuce) · JDBC
 
+[![Java CI](https://github.com/jimzucker/flink-generic/actions/workflows/maven.yml/badge.svg)](https://github.com/jimzucker/flink-generic/actions/workflows/maven.yml)
+[![OWASP Dependency-Check](https://github.com/jimzucker/flink-generic/actions/workflows/owasp.yml/badge.svg)](https://github.com/jimzucker/flink-generic/actions/workflows/owasp.yml)
+
 ---
 
 ## Why this exists
@@ -122,8 +125,22 @@ See [`flink-common`](flink-baseline/flink-common/README.md) for the full API.
 mvn clean install
 ```
 
-CI runs `mvn -B verify` on JDK 17 via [GitHub Actions](.github/workflows/maven.yml) — a full reactor build
-including PMD (strict), Apache RAT license checks, unit tests, and JaCoCo coverage.
+## Continuous integration
+
+Three GitHub Actions workflows guard the repo:
+
+- **[`maven.yml`](.github/workflows/maven.yml)** — on every push to `master` and every pull request. Runs
+  `mvn -B verify` on JDK 17: a full reactor build with PMD (strict), Apache RAT license checks, unit tests,
+  JaCoCo coverage, and the `flink-jdbc-sink` **Testcontainers integration tests** (`JdbcSinkIT`,
+  `KeyedJdbcProcessFunctionIT`). Those ITs run as part of the normal `verify` lifecycle (failsafe is bound
+  directly in that module), so they need a Docker daemon — the GitHub `ubuntu-latest` runner provides one.
+- **[`owasp.yml`](.github/workflows/owasp.yml)** — scheduled weekly (plus on-demand via *Run workflow*). Runs
+  OWASP dependency-check and **fails on any dependency with a CVE scoring CVSS ≥ 7**. Kept out of `maven.yml`
+  so PR builds stay fast and never flake on NVD API outages. False positives and accepted risks live in
+  [`.owasp/suppressions.xml`](.owasp/suppressions.xml), each entry documented and time-boxed with an
+  `until=` date (~60-day window). Set an `NVD_API_KEY` repository secret to avoid NVD rate-limiting.
+- **[Dependabot](.github/dependabot.yml)** — weekly PRs for Maven dependencies and GitHub Actions. Enable
+  *Dependabot alerts* in the repo's Settings → Code security for vulnerability notifications.
 
 ## Run the example
 
@@ -135,6 +152,10 @@ step-by-step, including the runtime "feature flag" configuration-reload demo.
 
 - **Unit tests:** `mvn test`
 - **Integration tests:** the module-level `*IT` tests use [Testcontainers](https://testcontainers.com)
-  (MySQL, Redis) and require a running Docker daemon.
+  (MySQL, Redis) and require a running Docker daemon. The self-contained `flink-jdbc-sink` ITs
+  (`JdbcSinkIT`, `KeyedJdbcProcessFunctionIT`) run automatically in `mvn verify` (and in CI); no profile
+  needed.
 - **End-to-end:** the [`SmoothingIT`](flink-test-example/README.md) test (`-PIT-test` profile) drives the
-  full SmoothingPrices pipeline against the Docker stack and asserts eventual-consistent output.
+  full SmoothingPrices pipeline against the Docker stack and asserts eventual-consistent output. It needs a
+  separately-launched `SmoothingPricesJob`, so it stays behind the profile and is **not** run in CI.
+- **Dependency CVE scan:** `mvn -Powasp dependency-check:aggregate` (see the `owasp.yml` workflow above).
