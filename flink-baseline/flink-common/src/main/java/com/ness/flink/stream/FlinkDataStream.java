@@ -29,6 +29,7 @@ import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.streaming.api.datastream.BroadcastStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.streaming.api.functions.sink.v2.DiscardingSink;
@@ -146,8 +147,23 @@ public class FlinkDataStream<T> implements DataStreamProvider<T> {
     }
 
     protected <K, U> SingleOutputStreamOperator<U> configureStream(KeyedProcessorDefinition<K, T, U> def) {
-        SingleOutputStreamOperator<U> operator = singleOutputStreamOperator.keyBy(def.getKeySelector())
-            .process(def.getProcessFunction())
+        KeyedStream<T, K> keyedStream = singleOutputStreamOperator.keyBy(def.getKeySelector());
+        SingleOutputStreamOperator<U> operator;
+        if (def.getOperator() == null) {
+            operator = keyedStream.process(def.getProcessFunction());
+        } else {
+            // Custom operator path (e.g. BoundedOneInput end-of-input flushing). transform() needs the
+            // output type explicitly, which a custom operator always supplies via returnClass. Unlike
+            // process(), transform() does NOT run the ClosureCleaner, so clean the wrapped function
+            // ourselves — otherwise unused captured references (e.g. the enclosing instance of an
+            // anonymous JdbcStatementBuilder) make the operator non-serializable.
+            singleOutputStreamOperator.getExecutionEnvironment().clean(def.getProcessFunction());
+            operator = keyedStream.transform(def.getName(),
+                def.getReturnTypeInformation().orElseThrow(() -> new IllegalStateException(
+                    "Return type information is required when a custom keyed operator is supplied")),
+                def.getOperator());
+        }
+        operator = operator
             .setParallelism(def.getParallelism().orElse(getParallelism()))
             .name(def.getName())
             .uid(def.getName());
