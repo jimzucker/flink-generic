@@ -81,6 +81,7 @@ public class KeyedJdbcProcessFunction<K, I, O> extends KeyedProcessFunction<K, I
     private transient WindowAware windowAware;
     private transient RecoveryOperations recoveryOperations;
     private transient JdbcKeyedBatchStatementExecutor<I> jdbcKeyedBatchStatementExecutor;
+    private transient ListStateDescriptor<I> dataStateDescriptor;
 
     private transient Histogram latencyHistogram;
     private transient Histogram batchSizeHistogram;
@@ -91,7 +92,7 @@ public class KeyedJdbcProcessFunction<K, I, O> extends KeyedProcessFunction<K, I
 
         this.windowAware = new BasicGenerator(jdbcExecutionOptions.getBatchMaxWaitThresholdMs());
 
-        ListStateDescriptor<I> dataStateDescriptor =
+        this.dataStateDescriptor =
             new ListStateDescriptor<>(buildStateName() + "-data", stateClass);
 
         ValueStateDescriptor<Integer> integerValueStateDescriptor =
@@ -124,6 +125,26 @@ public class KeyedJdbcProcessFunction<K, I, O> extends KeyedProcessFunction<K, I
         int currentBatchSize = jdbcKeyedBatchStatementExecutor.addToBatch(value);
         boolean completed = jdbcKeyedBatchStatementExecutor.batchCompleted();
         if (completed) {
+            flush(currentBatchSize, out);
+        }
+    }
+
+    /**
+     * State descriptor for the per-key buffered batch. Exposed so a bounded operator can iterate all
+     * keys (via applyToAllKeys) and drain their pending batches when input ends.
+     */
+    public ListStateDescriptor<I> getDataStateDescriptor() {
+        return dataStateDescriptor;
+    }
+
+    /**
+     * Flush the current key's pending (partial) batch, emitting downstream. Called for every key at
+     * end-of-input so that records buffered but not yet flushed by a batch-size or timer trigger are
+     * not lost when a bounded job shuts down. No-op when the key has nothing buffered.
+     */
+    public void flushRemaining(Collector<O> out) throws IOException {
+        int currentBatchSize = jdbcKeyedBatchStatementExecutor.getCurrentBatchSize();
+        if (currentBatchSize > 0) {
             flush(currentBatchSize, out);
         }
     }

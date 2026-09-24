@@ -22,6 +22,7 @@ import com.ness.flink.sink.jdbc.config.JdbcOptions;
 import com.ness.flink.sink.jdbc.connector.SimpleJdbcConnectionProvider;
 import com.ness.flink.sink.jdbc.core.executor.JdbcStatementBuilder;
 import com.ness.flink.sink.jdbc.core.output.keyed.KeyedJdbcProcessFunction;
+import com.ness.flink.sink.jdbc.core.output.keyed.KeyedJdbcProcessOperator;
 import com.ness.flink.sink.jdbc.properties.JdbcSinkProperties;
 import javax.annotation.Nullable;
 import lombok.AccessLevel;
@@ -49,7 +50,11 @@ public final class JdbcKeyedProcessorBuilder<K, T, U> {
 
     public KeyedProcessorDefinition<K, T, U> buildKeyedProcessor(@NonNull ParameterTool params) {
         OperatorProperties operatorProperties = OperatorProperties.from(jdbcSinkProperties.getName(), params);
-        return new KeyedProcessorDefinition<>(operatorProperties, keySelector, createProcessFunction(), returnClass);
+        KeyedJdbcProcessFunction<K, T, U> processFunction = createProcessFunction();
+        // Wrap in the bounded-aware operator so a partial batch left buffered when input ends is
+        // flushed and emitted instead of being dropped on shutdown (see KeyedJdbcProcessOperator).
+        return new KeyedProcessorDefinition<>(operatorProperties, keySelector, processFunction, returnClass,
+            new KeyedJdbcProcessOperator<>(processFunction));
     }
 
     private KeyedJdbcProcessFunction<K, T, U> createProcessFunction() {

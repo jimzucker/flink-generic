@@ -20,6 +20,7 @@ import com.ness.flink.config.properties.OperatorProperties;
 import lombok.Getter;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.operators.KeyedProcessOperator;
 
 import javax.annotation.Nullable;
 
@@ -38,16 +39,35 @@ public class KeyedProcessorDefinition<K, T, U> extends CommonKeyedProcessorDefin
 
     private final KeyedProcessFunction<K, T, U> processFunction;
 
+    /**
+     * Optional custom operator wrapping {@link #processFunction}. When present, the stream is built with
+     * {@code transform(...)} using this operator instead of a plain {@code process(processFunction)} —
+     * letting a processor opt into operator-level hooks (e.g. BoundedOneInput end-of-input flushing)
+     * that a bare KeyedProcessFunction cannot express. Requires the return type information to be set.
+     */
+    @Nullable
+    private final KeyedProcessOperator<K, T, U> operator;
+
     public KeyedProcessorDefinition(OperatorProperties operatorProperties, KeySelector<T, K> keySelector,
         KeyedProcessFunction<K, T, U> processFunction) {
         super(operatorProperties, keySelector);
         this.processFunction = processFunction;
+        this.operator = null;
     }
 
     public KeyedProcessorDefinition(OperatorProperties operatorProperties, KeySelector<T, K> keySelector,
         KeyedProcessFunction<K, T, U> processFunction, @Nullable Class<U> returnClass) {
         super(operatorProperties, keySelector, returnClass);
         this.processFunction = processFunction;
+        this.operator = null;
+    }
+
+    public KeyedProcessorDefinition(OperatorProperties operatorProperties, KeySelector<T, K> keySelector,
+        KeyedProcessFunction<K, T, U> processFunction, @Nullable Class<U> returnClass,
+        @Nullable KeyedProcessOperator<K, T, U> operator) {
+        super(operatorProperties, keySelector, returnClass);
+        this.processFunction = processFunction;
+        this.operator = operator;
     }
 }
 

@@ -374,6 +374,15 @@
                         </argLine>
                     </configuration>
                 </plugin>
+                <!-- Version-only management so every module that binds failsafe (flink-jdbc-sink's
+                     build, flink-test-example's IT-test profile) shares one pinned version and no
+                     longer emits the "missing version" warning. Per-module argLine/executions stay
+                     local so binding stays opt-in (SmoothingIT must not run in the normal build). -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.5.2</version>
+                </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
