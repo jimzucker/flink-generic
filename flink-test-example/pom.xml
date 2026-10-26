@@ -39,6 +39,18 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
+                        <!-- SmoothingIT is a TestNG test (AbstractTestNGSpringContextTests). With
+                             junit-platform also on the classpath, failsafe auto-detects the JUnit
+                             Platform provider and silently discovers zero tests ("No tests to run",
+                             BUILD SUCCESS) - so the E2E guard quietly stops running. Pin the TestNG
+                             provider so SmoothingIT is actually executed. -->
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.maven.surefire</groupId>
+                                <artifactId>surefire-testng</artifactId>
+                                <version>3.5.2</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <goals>
