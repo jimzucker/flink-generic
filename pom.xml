@@ -134,7 +134,7 @@
             <dependency>
                 <groupId>at.yawk.lz4</groupId>                <!-- CVE-2026-59949 (JVM crash) -->
                 <artifactId>lz4-java</artifactId>
-                <version>1.11.1</version>
+                <version>1.11.4</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>         <!-- CVE-2024-26308/25710 -->
