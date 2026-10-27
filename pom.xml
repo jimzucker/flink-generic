@@ -402,10 +402,20 @@
                             <goals>
                                 <goal>prepare-agent-integration</goal>
                             </goals>
+                            <!-- Append integration-test coverage to the SAME jacoco.exec the unit
+                                 agent writes (default would be a separate jacoco-it.exec that the
+                                 report goal below never reads), so one report covers unit + ITs. -->
+                            <configuration>
+                                <destFile>${project.build.directory}/jacoco.exec</destFile>
+                            </configuration>
                         </execution>
                         <execution>
                             <id>jacoco-site</id>
-                            <phase>package</phase>
+                            <!-- Bind to verify, NOT package: failsafe's integration-test goal runs
+                                 AFTER package, so a report at package captures only unit tests and
+                                 understates IT coverage (e.g. flink-jdbc-sink read 14% instead of
+                                 its real ~81%). At verify the IT exec data is already written. -->
+                            <phase>verify</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
